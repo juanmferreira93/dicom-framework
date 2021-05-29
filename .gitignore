@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# VScode files
+.vscode/
+
+# Avoid tracking dicom and csv files
+data/
