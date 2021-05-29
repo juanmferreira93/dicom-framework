@@ -132,4 +132,5 @@ dmypy.json
 .vscode/
 
 # Avoid tracking dicom and csv files
-data/
+data/csv_files
+data/dicom_files
