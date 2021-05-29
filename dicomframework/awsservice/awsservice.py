@@ -2,8 +2,6 @@ import boto3
 import os
 from decouple import config
 
-BUCKET_NAME = 'metadata-test-csv'
-
 
 def connect():
     region_name = config('AWS_DEFAULT_REGION')
@@ -23,7 +21,8 @@ def connect():
 
 def upload():
     s3 = connect()
-    bucket = s3.Bucket(BUCKET_NAME)
+    bucket_name = config('BUCKET_NAME')
+    bucket = s3.Bucket(bucket_name)
 
     for file in os.listdir('data/csv_files'):
         print(f'Uploading csv_file: {file}')
@@ -33,7 +32,8 @@ def upload():
 
 def download():
     s3 = connect()
-    bucket = s3.Bucket(BUCKET_NAME)
+    bucket_name = config('BUCKET_NAME')
+    bucket = s3.Bucket(bucket_name)
 
     for obj in bucket.objects.filter(Prefix='dicom_files/'):
         file_name = obj.key.split('/')[-1]
