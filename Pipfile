@@ -8,7 +8,6 @@ boto3 = "*"
 python-decouple = "*"
 pydicom = "*"
 pandas = "*"
-tqdm = "*"
 
 [dev-packages]
 autopep8 = "*"
