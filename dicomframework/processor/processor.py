@@ -5,6 +5,18 @@ import os
 import pandas as pd
 from pydicom import dcmread
 
+# All columns for which we want to collect information
+# Still need to define how we will work with sequences
+fact_table_cols = fact_cols()
+patient_table_cols = patient_cols()
+
+# Initialize dictionary to collect the metadata
+fact_table_dict = {col: [] for col in fact_table_cols}
+patient_table_dict = {col: [] for col in patient_table_cols}
+
+# Get dicoms from files
+dicom_files = os.listdir('data/dicom_files/')
+
 
 def print_dicom():
     for file in os.listdir('data/dicom_files'):
@@ -14,24 +26,15 @@ def print_dicom():
 
 
 def to_csv():
-    # All columns for which we want to collect information
-    # Still need to define how we will work with sequences
-    fact_table_cols = fact_cols()
-    patient_table_cols = patient_cols()
-
-    # Initialize dictionary to collect the metadata
-    fact_table_dict = {col: [] for col in fact_table_cols}
-    patient_table_dict = {col: [] for col in patient_table_cols}
-
-    # Get dicoms from files
-    dicom_files = os.listdir('data/dicom_files/')
+    global dicom_files
+    global fact_table_dict
+    global patient_table_dict
 
     for dicom in dicom_files:
         print(f'Reading dicom_file: {dicom}')
         dicom_object = dcmread(f'data/dicom_files/{dicom}')
 
-        create_table2(dicom_object, fact_table_cols,
-                      fact_table_dict, patient_table_cols, patient_table_dict)
+        create_csv(dicom_object)
 
     # Store all information in a DataFrame and run garbage collector
     fact_table_df = pd.DataFrame(fact_table_dict)
@@ -46,37 +49,42 @@ def to_csv():
     patient_table_df.to_csv('data/csv_files/patient_table.csv', index=False)
 
 
-def create_table2(dicom_object, table_cols, table_dict, patient_table_cols, child_dict):
-    for col in table_cols:
+def create_csv(dicom_object):
+    global fact_table_cols
+    global fact_table_dict
+
+    for col in fact_table_cols:
         try:
+            value = str(getattr(dicom_object, col))
+
             if col == 'PatientID':
-                id = len(table_dict[col]) + 1
-                table_dict[col].append(str(id))
-                create_child_table(
-                    id, dicom_object, patient_table_cols, child_dict)
+                if value in patient_table_dict['PatientID']:
+                    id = patient_table_dict['PatientID'].index(value) + 1
+                    fact_table_dict[col].append(str(id))
+                else:
+                    id = len(fact_table_dict[col]) + 1
+                    fact_table_dict[col].append(str(id))
+
+                    create_patient_csv(id, dicom_object)
             else:
-                table_dict[col].append(str(getattr(dicom_object, col)))
+                fact_table_dict[col].append(value)
         except:
-            table_dict[col].append('-')
-            print(f'Error importing fields')
+            fact_table_dict[col].append('-')
+            filename = dicom_object.filename.split('/')[2]
+            print(f'Error importing Fact: {col} from {filename}')
 
 
-def create_child_table(id, dicom_object, child_cols, child_dict):
-    for col in child_cols:
+def create_patient_csv(id, dicom_object):
+    global patient_table_cols
+    global patient_table_dict
+
+    for col in patient_table_cols:
         try:
             if col == 'id':
-                child_dict[col].append(str(id))
+                patient_table_dict[col].append(str(id))
             else:
-                child_dict[col].append(str(getattr(dicom_object, col)))
+                patient_table_dict[col].append(str(getattr(dicom_object, col)))
         except:
-            child_dict[col].append('-')
-            print(f'Error importing CHILD fields')
-
-
-def create_table(dicom_object, table_cols, table_dict):
-    for col in table_cols:
-        try:
-            table_dict[col].append(str(getattr(dicom_object, col)))
-        except:
-            table_dict[col].append('-')
-            print(f'Error importing fields')
+            patient_table_dict[col].append('-')
+            filename = dicom_object.filename.split('/')[2]
+            print(f'Error importing Patient: {col} from {filename}')

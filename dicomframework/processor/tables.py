@@ -1,3 +1,13 @@
+def header_cols():
+    return ['FileMetaInformationGroupLength',
+            'FileMetaInformationVersion',
+            'MediaStorageSOPClassUID',
+            'MediaStorageSOPInstanceUID',
+            'TransferSyntaxUID',
+            'ImplementationClassUID',
+            'SourceApplicationEntityTitle']
+
+
 def fact_cols():
     return['SpecificCharacterSet',
            'ImageType',
@@ -62,16 +72,6 @@ def fact_cols():
            'CurveData',
            'PixelData'
            ]
-
-
-def header_cols():
-    return ['FileMetaInformationGroupLength',
-            'FileMetaInformationVersion',
-            'MediaStorageSOPClassUID',
-            'MediaStorageSOPInstanceUID',
-            'TransferSyntaxUID',
-            'ImplementationClassUID',
-            'SourceApplicationEntityTitle']
 
 
 def patient_cols():
