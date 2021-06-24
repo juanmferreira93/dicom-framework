@@ -1,3 +1,7 @@
+def child_id_cols():
+    return['PatitntID']
+
+
 def header_cols():
     return ['FileMetaInformationGroupLength',
             'FileMetaInformationVersion',

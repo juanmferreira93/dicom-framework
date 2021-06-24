@@ -1,4 +1,4 @@
-from processor.tables import fact_cols, patient_cols
+from processor.tables import fact_cols, patient_cols, child_id_cols
 import gc
 import os
 
@@ -9,6 +9,7 @@ from pydicom import dcmread
 # Still need to define how we will work with sequences
 fact_table_cols = fact_cols()
 patient_table_cols = patient_cols()
+# child_ids = child_id_cols()
 
 # Initialize dictionary to collect the metadata
 fact_table_dict = {col: [] for col in fact_table_cols}
@@ -52,6 +53,7 @@ def to_csv():
 def create_csv(dicom_object):
     global fact_table_cols
     global fact_table_dict
+    # global child_ids
 
     for col in fact_table_cols:
         try:
