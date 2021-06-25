@@ -3,7 +3,7 @@ from processor.processor import print_dicom, to_csv
 
 
 def generate_dw_data():
-    # download()
+    download()
     # print_dicom()
     to_csv()
     # upload()
