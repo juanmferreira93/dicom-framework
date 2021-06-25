@@ -9,7 +9,7 @@ from pydicom import dcmread
 # Still need to define how we will work with sequences
 fact_table_cols = fact_cols()
 patient_table_cols = patient_cols()
-# child_ids = child_id_cols()
+child_ids = child_id_cols()
 
 # Initialize dictionary to collect the metadata
 fact_table_dict = {col: [] for col in fact_table_cols}
@@ -17,13 +17,6 @@ patient_table_dict = {col: [] for col in patient_table_cols}
 
 # Get dicoms from files
 dicom_files = os.listdir('data/dicom_files/')
-
-
-def print_dicom():
-    for file in os.listdir('data/dicom_files'):
-        ds = dcmread(f'data/dicom_files/{file}')
-        breakpoint()
-        print(ds)
 
 
 def to_csv():
@@ -53,15 +46,15 @@ def to_csv():
 def create_csv(dicom_object):
     global fact_table_cols
     global fact_table_dict
-    # global child_ids
+    global child_ids
 
     for col in fact_table_cols:
         try:
             value = str(getattr(dicom_object, col))
 
-            if col == 'PatientID':
-                if value in patient_table_dict['PatientID']:
-                    id = patient_table_dict['PatientID'].index(value) + 1
+            if col in child_ids:
+                if value in patient_table_dict[col]:
+                    id = patient_table_dict[col].index(value) + 1
                     fact_table_dict[col].append(str(id))
                 else:
                     id = len(fact_table_dict[col]) + 1
@@ -73,7 +66,7 @@ def create_csv(dicom_object):
         except:
             fact_table_dict[col].append('-')
             filename = dicom_object.filename.split('/')[2]
-            print(f'Error importing Fact: {col} from {filename}')
+            # print(f'Error importing Fact: {col} from {filename}')
 
 
 def create_patient_csv(id, dicom_object):
@@ -89,4 +82,4 @@ def create_patient_csv(id, dicom_object):
         except:
             patient_table_dict[col].append('-')
             filename = dicom_object.filename.split('/')[2]
-            print(f'Error importing Patient: {col} from {filename}')
+            # print(f'Error importing Patient: {col} from {filename}')

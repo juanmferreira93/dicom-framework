@@ -1,5 +1,5 @@
 def child_id_cols():
-    return['PatitntID']
+    return['PatientID']
 
 
 def header_cols():
