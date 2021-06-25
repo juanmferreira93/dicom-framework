@@ -1,28 +1,29 @@
-from processor.tables import fact_cols, patient_cols, child_id_cols
+from processor.tables import main_cols, patient_cols, child_id_cols
 import gc
 import os
 
 import pandas as pd
 from pydicom import dcmread
 
-# All columns for which we want to collect information
-# Still need to define how we will work with sequences
-fact_table_cols = fact_cols()
-patient_table_cols = patient_cols()
+main_table_cols = main_cols()
 child_ids = child_id_cols()
+# Child tables. Each new child table must be declared here.
+# todo: Improve this.
+patient_table_cols = patient_cols()
 
-# Initialize dictionary to collect the metadata
-fact_table_dict = {col: [] for col in fact_table_cols}
+main_table_dict = {col: [] for col in main_table_cols}
+# Child tables. For each new child table user must declare a dict for it.
+# todo: Improve this.
 patient_table_dict = {col: [] for col in patient_table_cols}
-
-# Get dicoms from files
-dicom_files = os.listdir('data/dicom_files/')
 
 
 def to_csv():
-    global dicom_files
-    global fact_table_dict
+    global main_table_dict
+    # Child tables. For each new child table user must require the dict here.
+    # todo: Improve this.
     global patient_table_dict
+
+    dicom_files = os.listdir('data/dicom_files/')
 
     for dicom in dicom_files:
         print(f'Reading dicom_file: {dicom}')
@@ -30,43 +31,45 @@ def to_csv():
 
         create_csv(dicom_object)
 
-    # Store all information in a DataFrame and run garbage collector
-    fact_table_df = pd.DataFrame(fact_table_dict)
+    main_table_df = pd.DataFrame(main_table_dict)
+    # Child tables. For each new child table user must declare a df for it.
+    # todo: Improve this.
     patient_table_df = pd.DataFrame(patient_table_dict)
 
-    del fact_table_dict
+    del main_table_dict
+    # Child tables. For each new child table user must delete the dict here.
+    # todo: Improve this.
     del patient_table_dict
     gc.collect()
 
-    # Save to CSV
-    fact_table_df.to_csv('data/csv_files/fact_table.csv', index=False)
+    main_table_df.to_csv('data/csv_files/main_table.csv', index=False)
     patient_table_df.to_csv('data/csv_files/patient_table.csv', index=False)
 
 
 def create_csv(dicom_object):
-    global fact_table_cols
-    global fact_table_dict
+    global main_table_cols
+    global main_table_dict
     global child_ids
 
-    for col in fact_table_cols:
+    for col in main_table_cols:
         try:
             value = str(getattr(dicom_object, col))
 
             if col in child_ids:
                 if value in patient_table_dict[col]:
                     id = patient_table_dict[col].index(value) + 1
-                    fact_table_dict[col].append(str(id))
+                    main_table_dict[col].append(str(id))
                 else:
-                    id = len(fact_table_dict[col]) + 1
-                    fact_table_dict[col].append(str(id))
+                    id = len(main_table_dict[col]) + 1
+                    main_table_dict[col].append(str(id))
 
                     create_patient_csv(id, dicom_object)
             else:
-                fact_table_dict[col].append(value)
+                main_table_dict[col].append(value)
         except:
-            fact_table_dict[col].append('-')
+            main_table_dict[col].append('-')
             filename = dicom_object.filename.split('/')[2]
-            # print(f'Error importing Fact: {col} from {filename}')
+            # print(f'Error importing Main: {col} from {filename}')
 
 
 def create_patient_csv(id, dicom_object):

@@ -12,7 +12,7 @@ def header_cols():
             'SourceApplicationEntityTitle']
 
 
-def fact_cols():
+def main_cols():
     return['SpecificCharacterSet',
            'ImageType',
            'SOPClassUID',
