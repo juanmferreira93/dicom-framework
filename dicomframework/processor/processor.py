@@ -4,6 +4,8 @@ import os
 
 import pandas as pd
 from pydicom import dcmread
+import psycopg2
+
 
 # All columns for which we want to collect information
 # Still need to define how we will work with sequences
@@ -90,3 +92,27 @@ def create_patient_csv(id, dicom_object):
             patient_table_dict[col].append('-')
             filename = dicom_object.filename.split('/')[2]
             print(f'Error importing Patient: {col} from {filename}')
+
+
+def redshift():
+
+
+    # Redshift Server Details
+    dsn_database = "dev"
+    dsn_hostname = "redshift-cluster-1.coduwjelrsrq.eu-central-1.redshift.amazonaws.com"
+    dsn_port = "5439"
+    dsn_uid = "awsuser"
+    dsn_pwd = "Dicomm12"
+    print('a ver')
+    conn=psycopg2.connect(dbname= dsn_database, host=dsn_hostname, port= dsn_port, user= dsn_uid, password= dsn_pwd)
+    cur = conn.cursor();
+    print('adentro')
+   # conn = psycopg2.connect(dbname='dev', host='redshift-cluster-1.coduwjelrsrq.eu-central-1.redshift.amazonaws.com', port='5439', user='awsuser', password='Dicomm12')
+   # cur = conn.cursor();
+
+    # Begin your transaction
+    cur.execute("begin;")
+    cur.execute("copy dev.public.idmodality from 's3://metadata-test-csv/csv_files/patient_table.csv' credentials 'aws_access_key_id=AKIARTYB5ILZCGHXHMXG;aws_secret_access_key=HBzeRTgIhpI9AWCN6WZBqr8jlydDn6/5RUSt7Cmf' csv;")
+    # Commit your transaction
+    cur.execute("commit;")
+    print("Copy executed fine!")
