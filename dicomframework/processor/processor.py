@@ -101,8 +101,10 @@ def redshift():
     dsn_database = "dev"
     dsn_hostname = "redshift-cluster-1.coduwjelrsrq.eu-central-1.redshift.amazonaws.com"
     dsn_port = "5439"
-    dsn_uid = "awsuser"
-    dsn_pwd = "Dicomm12"
+    # dsn_uid = "awsuser"
+    # dsn_pwd = "TestTest12"
+    dsn_uid = "alejandrohorne@gmail.com"
+    dsn_pwd = "Dicomm12!@"
     print('a ver')
     conn=psycopg2.connect(dbname= dsn_database, host=dsn_hostname, port= dsn_port, user= dsn_uid, password= dsn_pwd)
     cur = conn.cursor();
