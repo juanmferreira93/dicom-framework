@@ -9,13 +9,13 @@ def redShiftConnect():
     dsn_port = config('DSN_PORT')
     dsn_uid = config('DSN_UID')
     dsn_pwd = config('DSN_PWD')
-    print('a ver Si entra')
     conn=psycopg2.connect(dbname= dsn_database, host=dsn_hostname, port= dsn_port, user= dsn_uid, password= dsn_pwd)
     cur = conn.cursor()
-    print('adentro')
+    print('Connected to Redshift')
+
     return cur;
     
-
+# We will be working on this method.
 def createTable(cur):
     # Begin your transaction
     cur.execute("begin;")

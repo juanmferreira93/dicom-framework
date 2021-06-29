@@ -1,11 +1,8 @@
 from processor.tables import fact_cols, patient_cols, child_id_cols
 import gc
 import os
-
 import pandas as pd
 from pydicom import dcmread
-import psycopg2
-
 
 # All columns for which we want to collect information
 # Still need to define how we will work with sequences

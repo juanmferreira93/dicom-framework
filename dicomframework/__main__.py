@@ -3,7 +3,7 @@ from processor.processor import print_dicom, to_csv
 from awsservice.redshift import  redShiftConnect, createTable
 
 def generate_dw_data():
-    connect()
+    # connect()
     # download()
     # print_dicom()
     # to_csv()
