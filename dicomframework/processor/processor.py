@@ -11,7 +11,7 @@ child_ids = child_id_cols()
 # todo: Improve this.
 patient_table_cols = patient_cols()
 
-main_table_dict = {col: [] for col in main_table_cols}
+main_table_dict = {col['name']: [] for col in main_table_cols}
 # Child tables. For each new child table user must declare a dict for it.
 # todo: Improve this.
 patient_table_dict = {col: [] for col in patient_table_cols}
@@ -53,21 +53,21 @@ def create_csv(dicom_object):
 
     for col in main_table_cols:
         try:
-            value = str(getattr(dicom_object, col))
+            value = str(dicom_object.get_item(f"0x{col['number']}").value)
 
             if col in child_ids:
                 if value in patient_table_dict[col]:
                     id = patient_table_dict[col].index(value) + 1
-                    main_table_dict[col].append(str(id))
+                    main_table_dict[col['name']].append(str(id))
                 else:
                     id = len(main_table_dict[col]) + 1
-                    main_table_dict[col].append(str(id))
+                    main_table_dict[col['name']].append(str(id))
 
                     create_patient_csv(id, dicom_object)
             else:
-                main_table_dict[col].append(value)
+                main_table_dict[col['name']].append(value)
         except:
-            main_table_dict[col].append('-')
+            main_table_dict[col['name']].append('-')
             filename = dicom_object.filename.split('/')[2]
             # print(f'Error importing Main: {col} from {filename}')
 
