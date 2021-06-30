@@ -1,6 +1,7 @@
 from processor.tables import fact_cols, patient_cols, child_id_cols
 import gc
 import os
+
 import pandas as pd
 from pydicom import dcmread
 
@@ -89,6 +90,3 @@ def create_patient_csv(id, dicom_object):
             patient_table_dict[col].append('-')
             filename = dicom_object.filename.split('/')[2]
             print(f'Error importing Patient: {col} from {filename}')
-
-
-
