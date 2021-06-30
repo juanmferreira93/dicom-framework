@@ -26,9 +26,10 @@ def upload():
     bucket = s3.Bucket(bucket_name)
 
     for file in os.listdir('data/csv_files'):
-        print(f'Uploading csv_file: {file}')
-        bucket.upload_file(
-            Filename=f'data/csv_files/{file}', Key=f'csv_files/{file}')
+        if file.split('.')[1] == 'csv':
+            print(f'Uploading csv_file: {file}')
+            bucket.upload_file(
+                Filename=f'data/csv_files/{file}', Key=f'csv_files/{file}')
 
 
 def download():

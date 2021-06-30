@@ -1,92 +1,108 @@
-from processor.tables import fact_cols, patient_cols, child_id_cols
+from processor.column_mapping import main_cols, patient_cols, child_id_cols, child_mapping_table
+from awsservice.redshift import write
 import gc
 import os
 
 import pandas as pd
 from pydicom import dcmread
 
-# All columns for which we want to collect information
-# Still need to define how we will work with sequences
-fact_table_cols = fact_cols()
-patient_table_cols = patient_cols()
-# child_ids = child_id_cols()
 
-# Initialize dictionary to collect the metadata
-fact_table_dict = {col: [] for col in fact_table_cols}
-patient_table_dict = {col: [] for col in patient_table_cols}
+class Processor:
+    def __init__(self):
+        # Get cols for each table
+        self.main_cols = main_cols()
+        self.child_ids = child_id_cols()
 
-# Get dicoms from files
-dicom_files = os.listdir('data/dicom_files/')
+        ##### Child tables #####
+        self.patient_cols = patient_cols()
+        # self.xxx_cols = xxx_cols()
+        ##### Finish cols section #####
 
+        # Initialize one dict for each table
+        self.main_dict = {col['name']: []
+                          for col in self.main_cols}
 
-def print_dicom():
-    for file in os.listdir('data/dicom_files'):
-        ds = dcmread(f'data/dicom_files/{file}')
-        breakpoint()
-        print(ds)
+        ##### Child dicts #####
+        self.patient_dict = {col['name']: []
+                             for col in self.patient_cols}
+        # self.xxx._dict = {col['name']: [] for col in self.xxx_cols}
+        ##### Finish dict initialization #####
+
+    # Replace this method with awsservice.redshift.write method
+    def create_csv(self):
+        main_df = pd.DataFrame(self.main_dict)
+        main_df.to_csv('data/csv_files/main.csv', index=False)
+
+        ##### Child CSVs #####
+        patient_df = pd.DataFrame(self.patient_dict)
+        patient_df.to_csv(
+            'data/csv_files/patient.csv', index=False)
+        ##### Finish CSV creations #####
+
+    def clean(self):
+        # This code deletes dicts
+        del self.main_dict
+
+        ##### Child dicts #####
+        del self.patient_dict
+        gc.collect()
+        ##### Finish dict deletion #####
 
 
 def to_csv():
-    global dicom_files
-    global fact_table_dict
-    global patient_table_dict
+    processor = Processor()
+
+    dicom_files = os.listdir('data/dicom_files/')
 
     for dicom in dicom_files:
         print(f'Reading dicom_file: {dicom}')
         dicom_object = dcmread(f'data/dicom_files/{dicom}')
 
-        create_csv(dicom_object)
+        create_csv(processor, dicom_object)
 
-    # Store all information in a DataFrame and run garbage collector
-    fact_table_df = pd.DataFrame(fact_table_dict)
-    patient_table_df = pd.DataFrame(patient_table_dict)
-
-    del fact_table_dict
-    del patient_table_dict
-    gc.collect()
-
-    # Save to CSV
-    fact_table_df.to_csv('data/csv_files/fact_table.csv', index=False)
-    patient_table_df.to_csv('data/csv_files/patient_table.csv', index=False)
+    processor.create_csv()
+    processor.clean()
 
 
-def create_csv(dicom_object):
-    global fact_table_cols
-    global fact_table_dict
-    # global child_ids
-
-    for col in fact_table_cols:
+def create_csv(processor, dicom_object):
+    for col in processor.main_cols:
         try:
-            value = str(getattr(dicom_object, col))
+            data = str(dicom_object.get_item(f"0x{col['number']}").value)
+            if col['number'] in processor.child_ids:
+                table = child_mapping(col['number'])
 
-            if col == 'PatientID':
-                if value in patient_table_dict['PatientID']:
-                    id = patient_table_dict['PatientID'].index(value) + 1
-                    fact_table_dict[col].append(str(id))
+                if data in eval(f'processor.{table}_dict')[col['name']]:
+                    id = eval(f'processor.{table}_dict')[
+                        col['name']].index(data) + 1
+                    processor.main_dict[col['name']].append(str(id))
                 else:
-                    id = len(fact_table_dict[col]) + 1
-                    fact_table_dict[col].append(str(id))
+                    id = len(processor.main_dict[col['name']]) + 1
+                    processor.main_dict[col['name']].append(str(id))
 
-                    create_patient_csv(id, dicom_object)
+                    create_csv_from_child_table(
+                        processor, table, id, dicom_object)
             else:
-                fact_table_dict[col].append(value)
+                processor.main_dict[col['name']].append(data)
         except:
-            fact_table_dict[col].append('-')
+            processor.main_dict[col['name']].append('-')
             filename = dicom_object.filename.split('/')[2]
-            print(f'Error importing Fact: {col} from {filename}')
+            print(f'Error importing Main: {col} from {filename}')
 
 
-def create_patient_csv(id, dicom_object):
-    global patient_table_cols
-    global patient_table_dict
-
-    for col in patient_table_cols:
+def create_csv_from_child_table(processor, table, id, dicom_object):
+    for col in eval(f'processor.{table}_cols'):
         try:
-            if col == 'id':
-                patient_table_dict[col].append(str(id))
+            if col['name'] == 'id':
+                eval(f'processor.{table}_dict')[col['name']].append(str(id))
             else:
-                patient_table_dict[col].append(str(getattr(dicom_object, col)))
+                eval(f'processor.{table}_dict')[col['name']].append(
+                    str(dicom_object.get_item(f"0x{col['number']}").value)
+                )
         except:
-            patient_table_dict[col].append('-')
+            eval(f'processor.{table}_dict')[col['name']].append('-')
             filename = dicom_object.filename.split('/')[2]
             print(f'Error importing Patient: {col} from {filename}')
+
+
+def child_mapping(number):
+    return child_mapping_table()[number]

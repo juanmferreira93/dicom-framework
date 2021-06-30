@@ -1,12 +1,11 @@
-from awsservice.s3 import connect, download, upload
-from processor.processor import print_dicom, to_csv
+from awsservice.s3 import download, upload
+from processor.processor import to_csv
 
 
 def generate_dw_data():
     download()
-    # print_dicom()
     to_csv()
-    # upload()
+    # upload() keep this commented for now
 
 
 generate_dw_data()
