@@ -1,4 +1,5 @@
 from processor.column_mapping import main_cols, patient_cols, child_id_cols, child_mapping_table
+from awsservice.redshift import write
 import gc
 import os
 
@@ -27,6 +28,7 @@ class Processor:
         # self.xxx._dict = {col['name']: [] for col in self.xxx_cols}
         ##### Finish dict initialization #####
 
+    # Replace this method with awsservice.redshift.write method
     def create_csv(self):
         main_df = pd.DataFrame(self.main_dict)
         main_df.to_csv('data/csv_files/main.csv', index=False)
