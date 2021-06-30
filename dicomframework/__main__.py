@@ -3,7 +3,7 @@ from processor.processor import to_csv
 
 
 def generate_dw_data():
-    download()
+    # download() keep this commented for now
     to_csv()
     # upload() keep this commented for now
 
