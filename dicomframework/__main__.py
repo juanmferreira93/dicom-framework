@@ -3,9 +3,9 @@ from processor.processor import to_csv
 
 
 def generate_dw_data():
-    # download()
+    download()
     to_csv()
-    # upload()
+    # upload() keep this commented for now
 
 
 generate_dw_data()
