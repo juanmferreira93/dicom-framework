@@ -112,7 +112,7 @@ def decode(string):
     errors = 'replace'
 
     try:
-        return string.decode(encoding, errors).replace("\x00", "\uFFFD")
+        return string.decode(encoding, errors).replace("\x00", '')
     except:
         return str(string)
 
