@@ -32,11 +32,13 @@ class Processor:
     def create_csv(self):
         main_df = pd.DataFrame(self.main_dict)
         main_df.to_csv('data/csv_files/main.csv', index=False)
+        write(main_df, 'main_table')
 
         ##### Child CSVs #####
         patient_df = pd.DataFrame(self.patient_dict)
         patient_df.to_csv(
             'data/csv_files/patient.csv', index=False)
+        write(patient_df, 'patient_table')
         ##### Finish CSV creations #####
 
     def clean(self):
@@ -67,7 +69,8 @@ def to_csv():
 def create_csv(processor, dicom_object):
     for col in processor.main_cols:
         try:
-            data = str(dicom_object.get_item(f"0x{col['number']}").value)
+            data = decode(dicom_object.get_item(f"0x{col['number']}").value)
+
             if col['number'] in processor.child_ids:
                 table = child_mapping(col['number'])
 
@@ -96,12 +99,22 @@ def create_csv_from_child_table(processor, table, id, dicom_object):
                 eval(f'processor.{table}_dict')[col['name']].append(str(id))
             else:
                 eval(f'processor.{table}_dict')[col['name']].append(
-                    str(dicom_object.get_item(f"0x{col['number']}").value)
+                    decode(dicom_object.get_item(f"0x{col['number']}").value)
                 )
         except:
             eval(f'processor.{table}_dict')[col['name']].append('-')
             filename = dicom_object.filename.split('/')[2]
             print(f'Error importing Patient: {col} from {filename}')
+
+
+def decode(string):
+    encoding = 'utf-8'
+    errors = 'replace'
+
+    try:
+        return string.decode(encoding, errors).replace("\x00", '')
+    except:
+        return str(string)
 
 
 def child_mapping(number):
