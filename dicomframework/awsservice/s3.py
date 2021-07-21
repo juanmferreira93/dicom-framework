@@ -31,6 +31,19 @@ def upload():
             bucket.upload_file(
                 Filename=f'data/csv_files/{file}', Key=f'csv_files/{file}')
 
+def uploadImg():
+    s3 = connect()
+    bucket_name = config('BUCKET_NAME')
+    bucket = s3.Bucket(bucket_name)
+    print('llega aca: ')
+    for file in os.listdir('data/images'):
+        print('rrrr ')
+        if file.split('.')[2] == 'png':
+            print('jjjjjj ')
+            print(f'Uploading img: {file}')
+            bucket.upload_file(
+                Filename=f'data/images/{file}', Key=f'images/{file}')
+
 
 def download():
     s3 = connect()

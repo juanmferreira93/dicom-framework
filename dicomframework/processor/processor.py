@@ -1,11 +1,13 @@
-from processor.column_mapping import main_cols, patient_cols, child_id_cols, child_mapping_table
-from awsservice.redshift import write
+import pandas as pd
 import gc
 import os
-
-import pandas as pd
+import pydicom
+import numpy as np
+import cv2
+from processor.column_mapping import main_cols, patient_cols, child_id_cols, child_mapping_table
+from awsservice.redshift import write
+from PIL import ImageTk, Image
 from pydicom import dcmread
-
 
 class Processor:
     def __init__(self):
@@ -51,17 +53,41 @@ class Processor:
         ##### Finish dict deletion #####
 
 
-def to_csv():
+def to_csv():   
     processor = Processor()
-
     dicom_files = os.listdir('data/dicom_files/')
-
     for dicom in dicom_files:
-        print(f'Reading dicom_file: {dicom}')
         dicom_object = dcmread(f'data/dicom_files/{dicom}')
+        try:
+            print(f'Reading dicom_file: {dicom}')
+            try:
+                secuence = dicom_object[0x00280008].value
+            except:
+                secuence = 0
+            i=0
+            if ( int(secuence) > 2):
+        
+                for listaDePixcel in dicom_object.pixel_array:
+                    i+=1
+                    im =listaDePixcel.astype(float)
+                    rescaled_image = (np.maximum(im,0)/im.max())*255 # float pixels
+                    final_image = np.uint8(rescaled_image) # integers pixels           
+                    final_image = Image.fromarray(final_image)    
+                    # final_image.save('data/images/'+dicom+'.jpg') # Save the image as JPG
+                    final_image.save('data/images/'+dicom+ str(i)+'.png') # Save the image as PNG
+            else:
+                im =dicom_object.pixel_array.astype(float)
+                rescaled_image = (np.maximum(im,0)/im.max())*255 # float pixels
+                final_image = np.uint8(rescaled_image) # integers pixels       
+                final_image = Image.fromarray(final_image)          
+                # final_image.save('data/images/'+dicom+'.jpg') # Save the image as JPG
+                final_image.save('data/images/'+dicom+ str(i)+'.png') # Save the image as PNG
+
+        except:
+            print(f'Could not convert:  {dicom}')
 
         create_csv(processor, dicom_object)
-
+       
     processor.create_csv()
     processor.clean()
 

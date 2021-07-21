@@ -9,6 +9,8 @@ python-decouple = "*"
 pydicom = "*"
 pandas = "*"
 sqlalchemy = "*"
+numpy = "*"
+pillow = "*"
 
 [dev-packages]
 autopep8 = "*"
