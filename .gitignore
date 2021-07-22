@@ -135,3 +135,6 @@ dmypy.json
 data/csv_files/*
 data/dicom_files/*
 data/image_files/*
+
+# Pipefile.lock
+Pipfile.lock
