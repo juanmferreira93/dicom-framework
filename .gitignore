@@ -134,3 +134,7 @@ dmypy.json
 # Avoid tracking dicom and csv files
 data/csv_files/*
 data/dicom_files/*
+data/image_files/*
+
+# Pipefile.lock
+Pipfile.lock
