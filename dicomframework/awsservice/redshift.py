@@ -1,5 +1,5 @@
 from decouple import config
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, NVARCHAR
 
 
 def connect():
@@ -21,6 +21,12 @@ def connect():
 def write(dataFrame, table_name):
     conn = connect()
 
-    dataFrame.to_sql(table_name, conn, index=False, if_exists='replace')
+    dataFrame.to_sql(
+        table_name, 
+        conn, 
+        index=False, 
+        if_exists='replace', 
+        dtype={ col_name: NVARCHAR(65535) for col_name in dataFrame } # todo: need to work on that
+    )
 
     print(f'Table: {table_name} created/charged fine!')

@@ -1,4 +1,6 @@
 import pandas as pd
+from processor.column_mapping import *
+from awsservice.redshift import write
 import gc
 import os
 import numpy as np
@@ -16,6 +18,7 @@ class Processor:
 
         ##### Child tables #####
         self.patient_cols = patient_cols()
+        self.study_cols = study_cols()
         # self.xxx_cols = xxx_cols()
         ##### Finish cols section #####
 
@@ -26,21 +29,31 @@ class Processor:
         ##### Child dicts #####
         self.patient_dict = {col['name']: []
                              for col in self.patient_cols}
+        self.study_dict = {col['name']: []
+                           for col in self.study_cols}
         # self.xxx._dict = {col['name']: [] for col in self.xxx_cols}
         ##### Finish dict initialization #####
 
     # Replace this method with awsservice.redshift.write method
-    def create_csv(self):
+    def create_csv(self, write_to_redshift):
         main_df = pd.DataFrame(self.main_dict)
         main_df.to_csv('data/csv_files/main.csv', index=False)
-        write(main_df, 'main_table')
 
         ##### Child CSVs #####
         patient_df = pd.DataFrame(self.patient_dict)
         patient_df.to_csv(
             'data/csv_files/patient.csv', index=False)
-        write(patient_df, 'patient_table')
+
+        study_df = pd.DataFrame(self.study_dict)
+        study_df.to_csv(
+            'data/csv_files/study.csv', index=False)
         ##### Finish CSV creations #####
+
+        if write_to_redshift:
+            write(main_df, 'main_table')
+            write(patient_df, 'patient_table')
+            write(study_df, 'study_table')
+
 
     def clean(self):
         # This code deletes dicts
@@ -48,18 +61,19 @@ class Processor:
 
         ##### Child dicts #####
         del self.patient_dict
+        del self.study_dict
         gc.collect()
         ##### Finish dict deletion #####
 
 
-def to_csv():   
+def to_csv(write_on_redshift):
     processor = Processor()
     dicom_files = os.listdir('data/dicom_files/')
     for dicom in dicom_files:
         dicom_object = dcmread(f'data/dicom_files/{dicom}')
         create_csv(processor, dicom_object, dicom)
        
-    processor.create_csv()
+    processor.create_csv(write_on_redshift) 
     processor.clean()
 
 
