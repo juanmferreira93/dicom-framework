@@ -1,4 +1,5 @@
 import os
+import io
 
 import boto3
 from decouple import config
@@ -35,14 +36,22 @@ def uploadImg():
     s3 = connect()
     bucket_name = config('BUCKET_NAME')
     bucket = s3.Bucket(bucket_name)
-    print('llega aca: ')
-    for file in os.listdir('data/images'):
-        print('rrrr ')
+
+    for file in os.listdir('data/image_files'):
         if file.split('.')[2] == 'png':
-            print('jjjjjj ')
-            print(f'Uploading img: {file}')
+            print(f'Uploading img_file: {file}')
             bucket.upload_file(
-                Filename=f'data/images/{file}', Key=f'images/{file}')
+                Filename=f'data/image_files/{file}', Key=f'image_files/{file}')
+
+def uploadImgToS3(image):
+    s3 = connect()
+    bucket_name = config('BUCKET_NAME')
+    bucket = s3.Bucket(bucket_name)
+
+    print(f'Uploading img_file: {image}')
+    
+    bucket.upload_file( Filename=f'data/image_files/{image}', Key=f'image_files/{image}')
+
 
 
 def download():

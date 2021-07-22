@@ -1,13 +1,12 @@
 import pandas as pd
 import gc
 import os
-import pydicom
 import numpy as np
-import cv2
 from processor.column_mapping import main_cols, patient_cols, child_id_cols, child_mapping_table
 from awsservice.redshift import write
-from PIL import ImageTk, Image
+from PIL import Image
 from pydicom import dcmread
+from awsservice.s3 import uploadImgToS3
 
 class Processor:
     def __init__(self):
@@ -58,41 +57,13 @@ def to_csv():
     dicom_files = os.listdir('data/dicom_files/')
     for dicom in dicom_files:
         dicom_object = dcmread(f'data/dicom_files/{dicom}')
-        try:
-            print(f'Reading dicom_file: {dicom}')
-            try:
-                secuence = dicom_object[0x00280008].value
-            except:
-                secuence = 0
-            i=0
-            if ( int(secuence) > 2):
-        
-                for listaDePixcel in dicom_object.pixel_array:
-                    i+=1
-                    im =listaDePixcel.astype(float)
-                    rescaled_image = (np.maximum(im,0)/im.max())*255 # float pixels
-                    final_image = np.uint8(rescaled_image) # integers pixels           
-                    final_image = Image.fromarray(final_image)    
-                    # final_image.save('data/images/'+dicom+'.jpg') # Save the image as JPG
-                    final_image.save('data/images/'+dicom+ str(i)+'.png') # Save the image as PNG
-            else:
-                im =dicom_object.pixel_array.astype(float)
-                rescaled_image = (np.maximum(im,0)/im.max())*255 # float pixels
-                final_image = np.uint8(rescaled_image) # integers pixels       
-                final_image = Image.fromarray(final_image)          
-                # final_image.save('data/images/'+dicom+'.jpg') # Save the image as JPG
-                final_image.save('data/images/'+dicom+ str(i)+'.png') # Save the image as PNG
-
-        except:
-            print(f'Could not convert:  {dicom}')
-
-        create_csv(processor, dicom_object)
+        create_csv(processor, dicom_object, dicom)
        
     processor.create_csv()
     processor.clean()
 
 
-def create_csv(processor, dicom_object):
+def create_csv(processor, dicom_object, dicom_name):
     for col in processor.main_cols:
         try:
             data = decode(dicom_object.get_item(f"0x{col['number']}").value)
@@ -112,11 +83,60 @@ def create_csv(processor, dicom_object):
                         processor, table, id, dicom_object)
             else:
                 processor.main_dict[col['name']].append(data)
+        
         except:
             processor.main_dict[col['name']].append('-')
             filename = dicom_object.filename.split('/')[2]
             print(f'Error importing Main: {col} from {filename}')
 
+    generate_image(dicom_object, dicom_name)
+        
+
+def generate_image(dicom_object, dicom_name):
+    try:
+        print(f'Reading dicom_file: {dicom_object}')
+        try:
+            secuence = dicom_object[0x00280008].value
+        except:
+            secuence = 0
+        
+        i = 0
+
+        if ( int(secuence) > 2):
+            
+            for pixel_array in dicom_object.pixel_array:
+                i += 1
+                generate_png_from_pixel(pixel_array, dicom_name, i)
+        else:
+            generate_png_from_dicom(dicom_object, dicom_name, i)
+           
+
+    except:
+        print(f'Could not convert:  {dicom_object}')
+
+def generate_png_from_pixel(pixel_array, dicom_name, index):
+    im = pixel_array.astype(float)
+    rescaled_image = (np.maximum(im,0)/im.max())*255 # float pixels
+    final_image = np.uint8(rescaled_image) # integers pixels           
+    final_image = Image.fromarray(final_image)    
+    
+    final_image.save('data/image_files/'+ dicom_name + str(index)+'.png') # Save the image as PNG
+
+    # uploadImgToS3(final_image)
+
+    # delete final_image
+
+def generate_png_from_dicom(dicom_object, dicom_name, index):
+    im = dicom_object.pixel_array.astype(float)
+    rescaled_image = (np.maximum(im,0)/im.max())*255 # float pixels
+    final_image = np.uint8(rescaled_image) # integers pixels       
+    final_image = Image.fromarray(final_image)          
+    
+    final_image.save('data/image_files/'+ dicom_name + str(index)+'.png') # Save the image as PNG
+
+    # uploadImgToS3(final_image)
+
+    # delete final_image
 
 def create_csv_from_child_table(processor, table, id, dicom_object):
     for col in eval(f'processor.{table}_cols'):
