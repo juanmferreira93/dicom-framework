@@ -1,14 +1,20 @@
-import pandas as pd
-from processor.column_mapping import *
-from awsservice.redshift import write
 import gc
 import os
+
 import numpy as np
-from processor.column_mapping import main_cols, patient_cols, child_id_cols, child_mapping_table
+import pandas as pd
 from awsservice.redshift import write
-from PIL import Image
-from pydicom import dcmread
 from awsservice.s3 import uploadImgToS3
+from PIL import Image
+from processor.column_mapping import *
+from processor.column_mapping import (
+    child_id_cols,
+    child_mapping_table,
+    main_cols,
+    patient_cols,
+)
+from pydicom import dcmread
+
 
 class Processor:
     def __init__(self):
@@ -23,37 +29,31 @@ class Processor:
         ##### Finish cols section #####
 
         # Initialize one dict for each table
-        self.main_dict = {col['name']: []
-                          for col in self.main_cols}
+        self.main_dict = {col["name"]: [] for col in self.main_cols}
 
         ##### Child dicts #####
-        self.patient_dict = {col['name']: []
-                             for col in self.patient_cols}
-        self.study_dict = {col['name']: []
-                           for col in self.study_cols}
+        self.patient_dict = {col["name"]: [] for col in self.patient_cols}
+        self.study_dict = {col["name"]: [] for col in self.study_cols}
         # self.xxx._dict = {col['name']: [] for col in self.xxx_cols}
         ##### Finish dict initialization #####
 
     # Replace this method with awsservice.redshift.write method
     def create_csv(self, write_to_redshift):
         main_df = pd.DataFrame(self.main_dict)
-        main_df.to_csv('data/csv_files/main.csv', index=False)
+        main_df.to_csv("data/csv_files/main.csv", index=False)
 
         ##### Child CSVs #####
         patient_df = pd.DataFrame(self.patient_dict)
-        patient_df.to_csv(
-            'data/csv_files/patient.csv', index=False)
+        patient_df.to_csv("data/csv_files/patient.csv", index=False)
 
         study_df = pd.DataFrame(self.study_dict)
-        study_df.to_csv(
-            'data/csv_files/study.csv', index=False)
+        study_df.to_csv("data/csv_files/study.csv", index=False)
         ##### Finish CSV creations #####
 
         if write_to_redshift:
-            write(main_df, 'main_table')
-            write(patient_df, 'patient_table')
-            write(study_df, 'study_table')
-
+            write(main_df, "main_table")
+            write(patient_df, "patient_table")
+            write(study_df, "study_table")
 
     def clean(self):
         # This code deletes dicts
@@ -68,12 +68,12 @@ class Processor:
 
 def to_csv(write_on_redshift):
     processor = Processor()
-    dicom_files = os.listdir('data/dicom_files/')
+    dicom_files = os.listdir("data/dicom_files/")
     for dicom in dicom_files:
-        dicom_object = dcmread(f'data/dicom_files/{dicom}')
+        dicom_object = dcmread(f"data/dicom_files/{dicom}")
         create_csv(processor, dicom_object, dicom)
-       
-    processor.create_csv(write_on_redshift) 
+
+    processor.create_csv(write_on_redshift)
     processor.clean()
 
 
@@ -82,97 +82,101 @@ def create_csv(processor, dicom_object, dicom_name):
         try:
             data = decode(dicom_object.get_item(f"0x{col['number']}").value)
 
-            if col['number'] in processor.child_ids:
-                table = child_mapping(col['number'])
+            if col["number"] in processor.child_ids:
+                table = child_mapping(col["number"])
 
-                if data in eval(f'processor.{table}_dict')[col['name']]:
-                    id = eval(f'processor.{table}_dict')[
-                        col['name']].index(data) + 1
-                    processor.main_dict[col['name']].append(str(id))
+                if data in eval(f"processor.{table}_dict")[col["name"]]:
+                    id = eval(f"processor.{table}_dict")[col["name"]].index(data) + 1
+                    processor.main_dict[col["name"]].append(str(id))
                 else:
-                    id = len(processor.main_dict[col['name']]) + 1
-                    processor.main_dict[col['name']].append(str(id))
+                    id = len(processor.main_dict[col["name"]]) + 1
+                    processor.main_dict[col["name"]].append(str(id))
 
-                    create_csv_from_child_table(
-                        processor, table, id, dicom_object)
+                    create_csv_from_child_table(processor, table, id, dicom_object)
             else:
-                processor.main_dict[col['name']].append(data)
-        
+                processor.main_dict[col["name"]].append(data)
+
         except:
-            processor.main_dict[col['name']].append('-')
-            filename = dicom_object.filename.split('/')[2]
-            print(f'Error importing Main: {col} from {filename}')
+            processor.main_dict[col["name"]].append("-")
+            filename = dicom_object.filename.split("/")[2]
+            print(f"Error importing Main: {col} from {filename}")
 
     generate_image(dicom_object, dicom_name)
-        
+
 
 def generate_image(dicom_object, dicom_name):
     try:
-        print(f'Reading dicom_file: {dicom_object}')
+        print(f"Reading dicom_file: {dicom_object}")
         try:
             secuence = dicom_object[0x00280008].value
         except:
             secuence = 0
-        
+
         i = 0
 
-        if ( int(secuence) > 2):
-            
+        if int(secuence) > 2:
+
             for pixel_array in dicom_object.pixel_array:
                 i += 1
                 generate_png_from_pixel(pixel_array, dicom_name, i)
         else:
             generate_png_from_dicom(dicom_object, dicom_name, i)
-           
 
     except:
-        print(f'Could not convert:  {dicom_object}')
+        print(f"Could not convert:  {dicom_object}")
+
 
 def generate_png_from_pixel(pixel_array, dicom_name, index):
     im = pixel_array.astype(float)
-    rescaled_image = (np.maximum(im,0)/im.max())*255 # float pixels
-    final_image = np.uint8(rescaled_image) # integers pixels           
-    final_image = Image.fromarray(final_image)    
-    
-    final_image.save('data/image_files/'+ dicom_name + str(index)+'.png') # Save the image as PNG
+    rescaled_image = (np.maximum(im, 0) / im.max()) * 255  # float pixels
+    final_image = np.uint8(rescaled_image)  # integers pixels
+    final_image = Image.fromarray(final_image)
+
+    final_image.save(
+        "data/image_files/" + dicom_name + str(index) + ".png"
+    )  # Save the image as PNG
 
     # uploadImgToS3(final_image)
 
     # delete final_image
+
 
 def generate_png_from_dicom(dicom_object, dicom_name, index):
     im = dicom_object.pixel_array.astype(float)
-    rescaled_image = (np.maximum(im,0)/im.max())*255 # float pixels
-    final_image = np.uint8(rescaled_image) # integers pixels       
-    final_image = Image.fromarray(final_image)          
-    
-    final_image.save('data/image_files/'+ dicom_name + str(index)+'.png') # Save the image as PNG
+    rescaled_image = (np.maximum(im, 0) / im.max()) * 255  # float pixels
+    final_image = np.uint8(rescaled_image)  # integers pixels
+    final_image = Image.fromarray(final_image)
+
+    final_image.save(
+        "data/image_files/" + dicom_name + str(index) + ".png"
+    )  # Save the image as PNG
 
     # uploadImgToS3(final_image)
 
     # delete final_image
 
+
 def create_csv_from_child_table(processor, table, id, dicom_object):
-    for col in eval(f'processor.{table}_cols'):
+    for col in eval(f"processor.{table}_cols"):
         try:
-            if col['name'] == 'id':
-                eval(f'processor.{table}_dict')[col['name']].append(str(id))
+            if col["name"] == "id":
+                eval(f"processor.{table}_dict")[col["name"]].append(str(id))
             else:
-                eval(f'processor.{table}_dict')[col['name']].append(
+                eval(f"processor.{table}_dict")[col["name"]].append(
                     decode(dicom_object.get_item(f"0x{col['number']}").value)
                 )
         except:
-            eval(f'processor.{table}_dict')[col['name']].append('-')
-            filename = dicom_object.filename.split('/')[2]
-            print(f'Error importing Patient: {col} from {filename}')
+            eval(f"processor.{table}_dict")[col["name"]].append("-")
+            filename = dicom_object.filename.split("/")[2]
+            print(f"Error importing Patient: {col} from {filename}")
 
 
 def decode(string):
-    encoding = 'utf-8'
-    errors = 'replace'
+    encoding = "utf-8"
+    errors = "replace"
 
     try:
-        return string.decode(encoding, errors).replace("\x00", '')
+        return string.decode(encoding, errors).replace("\x00", "")
     except:
         return str(string)
 
