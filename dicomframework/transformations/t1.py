@@ -1,8 +1,6 @@
-from transformation import execute
+from awsservice.redshift import execute
 
 
-def run(sql_statement):
+def run():
+    sql_statement = "select * from main_table"
     execute(sql_statement)
-
-
-run("select * from main_table")

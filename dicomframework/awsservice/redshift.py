@@ -1,5 +1,6 @@
 from decouple import config
 from sqlalchemy import NVARCHAR, create_engine
+import psycopg2
 
 
 def connect():
@@ -13,7 +14,7 @@ def connect():
         f"postgresql://{dsn_uid}:{dsn_pwd}@{dsn_hostname}:{dsn_port}/{dsn_database}"
     )
 
-    print("Connected to Redshift")
+    # print("Connected to Redshift")
 
     return conn
 
@@ -32,3 +33,22 @@ def write(dataFrame, table_name):
     )
 
     print(f"Table: {table_name} created/charged fine!")
+
+
+def execute(sql_statement):
+    conn = psycopg2.connect(
+        dbname=config("DSN_DATABASE"),
+        host=config("DSN_HOSTNAME"),
+        port=config("DSN_PORT"),
+        user=config("DSN_UID"),
+        password=config("DSN_PWD"),
+    )
+    cur = conn.cursor()
+    cur.execute(sql_statement)
+    rows = cur.fetchall()
+
+    # for row in rows:
+    #     print(row)
+
+    cur.close()
+    conn.close()

@@ -100,14 +100,14 @@ def create_csv(processor, dicom_object, dicom_name):
         except:
             processor.main_dict[col["name"]].append("-")
             filename = dicom_object.filename.split("/")[2]
-            print(f"Error importing Main: {col} from {filename}")
+            # print(f"Error importing Main: {col} from {filename}")
 
     generate_image(dicom_object, dicom_name)
 
 
 def generate_image(dicom_object, dicom_name):
     try:
-        print(f"Reading dicom_file: {dicom_object}")
+        # print(f"Reading dicom_file: {dicom_object}")
         try:
             secuence = dicom_object[0x00280008].value
         except:
@@ -175,7 +175,7 @@ def create_csv_from_child_table(processor, table, id, dicom_object):
         except:
             eval(f"processor.{table}_dict")[col["name"]].append("-")
             filename = dicom_object.filename.split("/")[2]
-            print(f"Error importing Patient: {col} from {filename}")
+            # print(f"Error importing Patient: {col} from {filename}")
 
 
 def decode(string):

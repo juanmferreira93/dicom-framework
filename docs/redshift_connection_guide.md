@@ -8,8 +8,8 @@ To connect to redshift, you need to configurate the security group. For this:
     - Source Type: Custom
     - Protocol: TCP
     - Source: 
-        - 	For IPv4: 0.0.0.0/0	
-        -   For IPv6: ::/0
+        - For IPv4: 0.0.0.0/0	
+        - For IPv6: ::/0
     - Save
 - This could take some minutes after changes take efect.
 
