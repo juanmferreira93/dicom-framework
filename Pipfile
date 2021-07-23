@@ -13,12 +13,14 @@ numpy = "*"
 pillow = "*"
 psycopg2 = "*"
 console-menu = "*"
-isort = "*"
-autopep8 = "*"
-black = "*"
 tqdm = "*"
 
 [dev-packages]
+black = "*"
+isort = "*"
 
 [requires]
 python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true

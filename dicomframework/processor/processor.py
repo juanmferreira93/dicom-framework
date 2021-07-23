@@ -14,9 +14,8 @@ from processor.column_mapping import (
     patient_cols,
 )
 from pydicom import dcmread
-
-from awsservice.s3 import uploadImgToS3
 from tqdm import tqdm
+
 
 class Processor:
     def __init__(self):
@@ -78,6 +77,7 @@ def to_csv(write_on_redshift):
     processor.create_csv(write_on_redshift)
     processor.clean()
 
+
 def create_csv(processor, dicom_object, dicom_name):
     for col in processor.main_cols:
         try:
@@ -116,7 +116,7 @@ def generate_image(dicom_object, dicom_name):
         i = 0
 
         if int(secuence) > 2:
-    
+
             for pixel_array in tqdm(dicom_object.pixel_array):
                 i += 1
                 generate_png_from_pixel(pixel_array, dicom_name, i)
@@ -128,7 +128,7 @@ def generate_image(dicom_object, dicom_name):
 
 def generate_png_from_pixel(pixel_array, dicom_name, index):
     image = pixel_array.astype(float)
-    
+
     paths = image_helper(image, index, dicom_name)
 
     uploadImgToS3(paths[0])
@@ -138,26 +138,28 @@ def generate_png_from_pixel(pixel_array, dicom_name, index):
 
 def generate_png_from_dicom(dicom_object, dicom_name, index):
     image = dicom_object.pixel_array.astype(float)
-    
+
     paths = image_helper(image, index, dicom_name)
 
     uploadImgToS3(paths[0])
 
     delete_image(paths[1])
 
+
 def delete_image(image):
     os.remove(image)
 
+
 def image_helper(image, index, dicom_name):
-    rescaled_image = (np.maximum(image,0)/image.max())*255 # float pixels
-    final_image = np.uint8(rescaled_image) # integers pixels           
-    final_image = Image.fromarray(final_image)   
-    
-    index_string = str(index) 
-    image_path = f'{dicom_name}{index_string}.png'
-    image_full_path = f'data/image_files/{image_path}'
-    final_image.save(image_full_path) # Save the image as PNG
-    
+    rescaled_image = (np.maximum(image, 0) / image.max()) * 255  # float pixels
+    final_image = np.uint8(rescaled_image)  # integers pixels
+    final_image = Image.fromarray(final_image)
+
+    index_string = str(index)
+    image_path = f"{dicom_name}{index_string}.png"
+    image_full_path = f"data/image_files/{image_path}"
+    final_image.save(image_full_path)  # Save the image as PNG
+
     return [image_path, image_full_path]
 
 
@@ -175,6 +177,7 @@ def create_csv_from_child_table(processor, table, id, dicom_object):
             filename = dicom_object.filename.split("/")[2]
             print(f"Error importing Patient: {col} from {filename}")
 
+
 def decode(string):
     encoding = "utf-8"
     errors = "replace"
@@ -183,6 +186,7 @@ def decode(string):
         return string.decode(encoding, errors).replace("\x00", "")
     except:
         return str(string)
+
 
 def child_mapping(number):
     return child_mapping_table()[number]

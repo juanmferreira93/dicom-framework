@@ -29,10 +29,6 @@ def main():
     menu.show()
 
 
-if __name__ == "__main__":
-    main()
-
-
 def generate_dw():
     generate_dw_data(True)
 
@@ -43,3 +39,7 @@ def generate_dw_data(write_on_redshift):
 
 def download_dicom_files():
     download()
+
+
+if __name__ == "__main__":
+    main()
