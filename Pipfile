@@ -16,6 +16,7 @@ console-menu = "*"
 isort = "*"
 autopep8 = "*"
 black = "*"
+tqdm = "*"
 
 [dev-packages]
 

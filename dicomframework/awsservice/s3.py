@@ -20,7 +20,6 @@ def connect():
     print("Conneced to s3")
     return s3
 
-
 def upload():
     s3 = connect()
     bucket_name = config("BUCKET_NAME")
@@ -55,7 +54,7 @@ def uploadImgToS3(image):
     print(f"Uploading img_file: {image}")
 
     bucket.upload_file(Filename=f"data/image_files/{image}", Key=f"image_files/{image}")
-
+    # todo: need to return the image url
 
 def download():
     s3 = connect()
