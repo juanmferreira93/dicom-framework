@@ -12,6 +12,7 @@ sqlalchemy = "*"
 numpy = "*"
 pillow = "*"
 psycopg2 = "*"
+tqdm = "*"
 
 [dev-packages]
 autopep8 = "*"
