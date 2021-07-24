@@ -12,13 +12,3 @@ def connect_query():
     )
 
     return conn
-
-
-def execute(sql_statement):
-    conn = connect_query()
-
-    cur = conn.cursor()
-    cur.execute(sql_statement)
-
-    cur.close()
-    conn.close()

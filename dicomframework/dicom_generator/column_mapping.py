@@ -67,6 +67,7 @@ def main_cols():
         # {"number": "50000114", "name": "CoordinateStepValue"},
         # {"number": "50003000", "name": "CurveData"},
         #    {'number': '7fe00010', 'name': 'PixelData'}
+        {"number": "image_paths", "name": "image_paths"},
     ]
 
 

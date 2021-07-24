@@ -47,9 +47,14 @@ def uploadImgToS3(image):
     s3 = connect()
     bucket_name = config("BUCKET_NAME")
     bucket = s3.Bucket(bucket_name)
+    region_name = config("AWS_DEFAULT_REGION")
+    image_folder = "image_files/"
+    bucket.upload_file(
+        Filename=f"data/image_files/{image}", Key=f"{image_folder}/{image}"
+    )
 
-    bucket.upload_file(Filename=f"data/image_files/{image}", Key=f"image_files/{image}")
-    # todo: need to return the image url
+    image_path = f"{bucket_name}.s3.{region_name}.amazonaws.com/{image_folder}/{image}"
+    return image_path
 
 
 def download():
@@ -63,3 +68,5 @@ def download():
 
         if not file_name == "":
             bucket.download_file(obj.key, f"data/dicom_files/{file_name}")
+
+    input("Press ENTER to continue \n")
