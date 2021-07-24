@@ -12,11 +12,15 @@ sqlalchemy = "*"
 numpy = "*"
 pillow = "*"
 psycopg2 = "*"
+console-menu = "*"
 tqdm = "*"
 
 [dev-packages]
-autopep8 = "*"
-flake8 = "*"
+black = "*"
+isort = "*"
 
 [requires]
 python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true
