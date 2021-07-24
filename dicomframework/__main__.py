@@ -4,7 +4,7 @@ from awsservice.s3 import download
 from consolemenu import *
 from consolemenu.items import *
 from dicom_generator.generator import to_csv
-from transformations.t1 import run
+from transformations.t1 import T1
 
 
 def main():
@@ -28,10 +28,11 @@ def main():
 
     for file in os.listdir("dicomframework/transformations/"):
         if not file in ["__init__.py", "transformation.py"]:
-            test_function = FunctionItem(f"{file}", run)
+            file_name = file.split(".")[0] + "()"
+            test_function = FunctionItem(f"{file}", eval(file_name.capitalize()).run)
             sub_menu.append_item(test_function)
 
-    sub_menu_item = SubmenuItem("Trasnformations", submenu=sub_menu)
+    sub_menu_item = SubmenuItem("Transformations", submenu=sub_menu)
     sub_menu_item.set_menu(menu)
 
     menu.append_item(sub_menu_item)

@@ -61,4 +61,5 @@ def download():
         file_name = obj.key.split("/")[-1]
         print(f"Downloading file: {file_name}")
 
-        bucket.download_file(obj.key, f"data/dicom_files/{file_name}")
+        if not file_name == "":
+            bucket.download_file(obj.key, f"data/dicom_files/{file_name}")

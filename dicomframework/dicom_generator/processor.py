@@ -7,6 +7,9 @@ from dicom_generator.column_mapping import *
 
 class Processor:
     def __init__(self):
+        # Supported modalities
+        self.supported_modalities = ["XA"]
+
         # Get cols for each table
         self.main_cols = main_cols()
         self.child_ids = child_id_cols()

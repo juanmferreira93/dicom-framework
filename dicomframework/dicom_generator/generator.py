@@ -15,7 +15,9 @@ def to_csv():
     for dicom in dicom_files:
         print(f"Processing dicom: {dicom}")
         dicom_object = dcmread(f"data/dicom_files/{dicom}")
-        create_csv(processor, dicom_object, dicom)
+        modality = dicom_object.Modality
+        if modality in processor.supported_modalities:
+            create_csv(processor, dicom_object, dicom)
 
     processor.create_csv()
     processor.clean()
