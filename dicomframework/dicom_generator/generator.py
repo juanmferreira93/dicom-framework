@@ -12,18 +12,22 @@ from tqdm import tqdm
 def to_csv():
     processor = Processor()
     dicom_files = os.listdir("data/dicom_files/")
+    i = 0
     for dicom in dicom_files:
         print(f"Processing dicom: {dicom}")
         dicom_object = dcmread(f"data/dicom_files/{dicom}")
         modality = dicom_object.Modality
         if modality in processor.supported_modalities:
-            create_csv(processor, dicom_object, dicom)
+            i += 1
+            create_csv(i, processor, dicom_object, dicom)
 
     processor.create_csv()
     processor.clean()
 
+    input("Press ENTER to continue \n")
 
-def create_csv(processor, dicom_object, dicom_name):
+
+def create_csv(dicom_index, processor, dicom_object, dicom_name):
     for col in processor.main_cols:
         try:
             data = decode(dicom_object.get_item(f"0x{col['number']}").value)
@@ -43,10 +47,12 @@ def create_csv(processor, dicom_object, dicom_name):
                 processor.main_dict[col["name"]].append(data)
 
         except:
-            processor.main_dict[col["name"]].append("-")
-            filename = dicom_object.filename.split("/")[2]
+            if col["name"] != "image_paths":
+                processor.main_dict[col["name"]].append("-")
+                filename = dicom_object.filename.split("/")[2]
 
-    generate_image(dicom_object, dicom_name)
+    image_paths = generate_image(dicom_object, dicom_name)
+    create_csv_from_image_paths(processor, dicom_index, image_paths)
 
 
 def generate_image(dicom_object, dicom_name):
@@ -58,13 +64,17 @@ def generate_image(dicom_object, dicom_name):
 
         i = 0
 
+        image_paths = []
         if int(secuence) > 2:
-
             for pixel_array in tqdm(dicom_object.pixel_array):
                 i += 1
-                generate_png_from_pixel(pixel_array, dicom_name, i)
+                image_path = generate_png_from_pixel(pixel_array, dicom_name, i)
+                image_paths.append(image_path)
         else:
-            generate_png_from_dicom(dicom_object, dicom_name, i)
+            image_path = generate_png_from_dicom(dicom_object, dicom_name, i)
+            image_paths.append(image_path)
+
+        return image_paths
     except:
         print(f"Could not convert:  {dicom_object}")
 
@@ -74,9 +84,11 @@ def generate_png_from_pixel(pixel_array, dicom_name, index):
 
     paths = image_helper(image, index, dicom_name)
 
-    uploadImgToS3(paths[0])
+    image_path = uploadImgToS3(paths[0])
 
     delete_image(paths[1])
+
+    return image_path
 
 
 def generate_png_from_dicom(dicom_object, dicom_name, index):
@@ -84,9 +96,11 @@ def generate_png_from_dicom(dicom_object, dicom_name, index):
 
     paths = image_helper(image, index, dicom_name)
 
-    uploadImgToS3(paths[0])
+    image_path = uploadImgToS3(paths[0])
 
     delete_image(paths[1])
+
+    return image_path
 
 
 def delete_image(image):
@@ -118,6 +132,13 @@ def create_csv_from_child_table(processor, table, id, dicom_object):
         except:
             eval(f"processor.{table}_dict")[col["name"]].append("-")
             filename = dicom_object.filename.split("/")[2]
+
+
+def create_csv_from_image_paths(processor, dicom_index, image_paths):
+    processor.main_dict["image_paths"].append(dicom_index)
+    for image_path in image_paths:
+        processor.image_dict["id"].append(dicom_index)
+        processor.image_dict["image_path"].append(image_path)
 
 
 def decode(string):

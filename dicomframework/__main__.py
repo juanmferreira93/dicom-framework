@@ -29,8 +29,8 @@ def main():
     for file in os.listdir("dicomframework/transformations/"):
         if not file in ["__init__.py", "transformation.py"]:
             file_name = file.split(".")[0] + "()"
-            test_function = FunctionItem(f"{file}", eval(file_name.capitalize()).run)
-            sub_menu.append_item(test_function)
+            function = FunctionItem(f"{file}", eval(file_name.capitalize()).run)
+            sub_menu.append_item(function)
 
     sub_menu_item = SubmenuItem("Transformations", submenu=sub_menu)
     sub_menu_item.set_menu(menu)

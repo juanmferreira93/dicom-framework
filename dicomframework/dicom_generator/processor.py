@@ -26,6 +26,7 @@ class Processor:
         ##### Child dicts #####
         self.patient_dict = {col["name"]: [] for col in self.patient_cols}
         self.study_dict = {col["name"]: [] for col in self.study_cols}
+        self.image_dict = {col: [] for col in ["id", "image_path"]}
         # self.xxx._dict = {col['name']: [] for col in self.xxx_cols}
         ##### Finish dict initialization #####
 
@@ -40,11 +41,14 @@ class Processor:
 
         study_df = pd.DataFrame(self.study_dict)
         study_df.to_csv("data/csv_files/study.csv", index=False)
+        image_df = pd.DataFrame(self.image_dict)
+        image_df.to_csv("data/csv_files/image.csv", index=False)
         ##### Finish CSV creations #####
 
         write(main_df, "main_table")
         write(patient_df, "patient_table")
         write(study_df, "study_table")
+        write(image_df, "image_table")
 
     def clean(self):
         # This code deletes dicts
