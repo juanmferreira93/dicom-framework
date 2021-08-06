@@ -38,6 +38,17 @@ def main():
     menu.append_item(sub_menu_item)
     menu.show()
 
+def auto_create_folders():
+    if not os.path.exists('data/csv_files'):
+        os.makedirs('data/csv_files')
+
+    if not os.path.exists('data/dicom_files'):
+        os.makedirs('data/dicom_files')
+
+    if not os.path.exists('data/image_files'):
+        os.makedirs('data/image_files')
+
 
 if __name__ == "__main__":
+    auto_create_folders()
     main()

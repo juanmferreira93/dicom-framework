@@ -6,7 +6,6 @@
 - Download and install pip [Pip](https://pypi.org/project/pip/)
 - Download and install pipenv [pipenv](https://pypi.org/project/pipenv/)
 - Open de project folder with the text editor
-- Create two folders inside 'data/' named 'dicom_files' and 'csv_files' if they not exists.
 - Create a file named '.env' in the root of the project, and copy the values from '.env.example'. Upload then the file with the correct ENV vars.
 - Run the following command: 'pipenv install' and then 'pipenv shell' to activate the new environment.
 - Run the project using: 'python3 dicomframework' or 'python dicomframework' for Windows users.
