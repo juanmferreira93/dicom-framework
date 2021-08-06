@@ -20,7 +20,8 @@ class T1(Transformation):
         # todo: improve this and make more logic
         start_query = f"create or replace view public.{type(self).__name__}_view"
         sql_query = (
-            f"{start_query} as select * from public.main_table with no schema binding;"
+            f"{start_query} as select * from public.main_table JOIN public.image_table " \
+            'ON public.main_table.image_paths = public.image_table.id with no schema binding;'
         )
         cur.execute(sql_query)
 
