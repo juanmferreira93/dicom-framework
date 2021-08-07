@@ -9,3 +9,7 @@
 - Create a file named '.env' in the root of the project, and copy the values from '.env.example'. Upload then the file with the correct ENV vars.
 - Run the following command: 'pipenv install' and then 'pipenv shell' to activate the new environment.
 - Run the project using: 'python3 dicomframework' or 'python dicomframework' for Windows users.
+
+### Using Docker
+We should run the command with the flag -it so the command will be:
+- `docker run -it <image_name>:<tag_name>`

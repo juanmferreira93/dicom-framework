@@ -11,9 +11,9 @@ pandas = "*"
 sqlalchemy = "*"
 numpy = "*"
 pillow = "*"
-psycopg2 = "*"
 console-menu = "*"
 tqdm = "*"
+psycopg2 = "*"
 
 [dev-packages]
 black = "*"
