@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from logger.logger import Logger
+
 
 class Transformation(ABC):
     @abstractmethod

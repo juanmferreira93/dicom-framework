@@ -2,6 +2,9 @@ import os
 
 import boto3
 from decouple import config
+from logger.logger import Logger
+
+logger = Logger()
 
 
 def connect():
@@ -65,7 +68,7 @@ def download():
 
     for obj in bucket.objects.filter(Prefix="dicom_files/"):
         file_name = obj.key.split("/")[-1]
-        print(f"Downloading file: {file_name}")
+        logger.log("info", f"Downloading file: {file_name}")
 
         if not file_name == "":
             bucket.download_file(obj.key, f"data/dicom_files/{file_name}")

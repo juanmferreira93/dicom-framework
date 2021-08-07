@@ -21,12 +21,12 @@ class T1(Transformation):
         start_query = f"create or replace view public.{type(self).__name__}_view"
         end_query = "with no schema binding;"
         sql_query = (
-            f"{start_query} AS " 
+            f"{start_query} AS "
             f"select * from public.main_table "
             "JOIN public.image_table "
             "ON public.main_table.image_paths = public.image_table.id "
             "JOIN public.patient_table "
-            "ON public.main_table.patientid = public.patient_table.id "    
+            "ON public.main_table.patientid = public.patient_table.id "
             f"{end_query}"
         )
 
