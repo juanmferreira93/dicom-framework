@@ -9,11 +9,8 @@ from transformations.t1 import T1
 
 def main():
     menu = ConsoleMenu("DICOM Framework Processor", "Select your choice")
-
-    # download_dicom_files_function = FunctionItem("Download DICOM files", download)
     generate_dw_function = FunctionItem("Process DICOM files", to_csv)
 
-    # menu.append_item(download_dicom_files_function)
     menu.append_item(generate_dw_function)
 
     sub_menu = MultiSelectMenu(

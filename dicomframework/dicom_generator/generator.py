@@ -125,7 +125,6 @@ def image_helper(image, index, dicom_name):
     index_string = str(index)
     image_path = f"{dicom_name}{index_string}.png"
     image_full_path = f"data/image_files/{image_path}"
-    # print(f"Saving image: {image_path}")
     final_image.save(image_full_path)  # Save the image as PNG
 
     return [image_path, image_full_path]
