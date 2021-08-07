@@ -10,10 +10,10 @@ from transformations.t1 import T1
 def main():
     menu = ConsoleMenu("DICOM Framework Processor", "Select your choice")
 
-    download_dicom_files_function = FunctionItem("Download DICOM files", download)
+    # download_dicom_files_function = FunctionItem("Download DICOM files", download)
     generate_dw_function = FunctionItem("Process DICOM files", to_csv)
 
-    menu.append_item(download_dicom_files_function)
+    # menu.append_item(download_dicom_files_function)
     menu.append_item(generate_dw_function)
 
     sub_menu = MultiSelectMenu(
@@ -38,15 +38,16 @@ def main():
     menu.append_item(sub_menu_item)
     menu.show()
 
+
 def auto_create_folders():
-    if not os.path.exists('data/csv_files'):
-        os.makedirs('data/csv_files')
+    if not os.path.exists("data/csv_files"):
+        os.makedirs("data/csv_files")
 
-    if not os.path.exists('data/dicom_files'):
-        os.makedirs('data/dicom_files')
+    if not os.path.exists("data/dicom_files"):
+        os.makedirs("data/dicom_files")
 
-    if not os.path.exists('data/image_files'):
-        os.makedirs('data/image_files')
+    if not os.path.exists("data/image_files"):
+        os.makedirs("data/image_files")
 
 
 if __name__ == "__main__":
