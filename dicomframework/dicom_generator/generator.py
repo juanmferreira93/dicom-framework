@@ -1,7 +1,8 @@
 import os
 
 import numpy as np
-from awsservice.s3 import uploadImgToS3
+from awsservice.s3 import connect, uploadImgToS3
+from decouple import config
 from dicom_generator.column_mapping import child_mapping_table
 from dicom_generator.processor import Processor
 from PIL import Image
@@ -11,20 +12,39 @@ from tqdm import tqdm
 
 def to_csv():
     processor = Processor()
-    dicom_files = os.listdir("data/dicom_files/")
+
+    s3 = connect()
+    bucket_name = config("BUCKET_NAME")
+    bucket = s3.Bucket(bucket_name)
+
     i = 0
-    for dicom in dicom_files:
-        print(f"Processing dicom: {dicom}")
-        dicom_object = dcmread(f"data/dicom_files/{dicom}")
-        modality = dicom_object.Modality
-        if modality in processor.supported_modalities:
-            i += 1
-            create_csv(i, processor, dicom_object, dicom)
+
+    for obj in bucket.objects.filter(Prefix="dicom_files/"):
+        file_name = obj.key.split("/")[-1]
+        print(f"Downloading file: {file_name}")
+
+        if not file_name == "":
+            bucket.download_file(obj.key, f"data/dicom_files/{file_name}")
+
+            dicom_object = dcmread(f"data/dicom_files/{file_name}")
+            print(f"Processing dicom: {file_name}")
+
+            modality = dicom_object.Modality
+            if modality in processor.supported_modalities:
+                i += 1
+                create_csv(i, processor, dicom_object, file_name)
+
+            delete_file(f"data/dicom_files/{file_name}")
 
     processor.create_csv()
     processor.clean()
 
     input("Press ENTER to continue \n")
+
+
+def delete_file(file):
+    print(f"Deleting file: {file}")
+    os.remove(file)
 
 
 def create_csv(dicom_index, processor, dicom_object, dicom_name):
@@ -81,30 +101,20 @@ def generate_image(dicom_object, dicom_name):
 
 def generate_png_from_pixel(pixel_array, dicom_name, index):
     image = pixel_array.astype(float)
-
     paths = image_helper(image, index, dicom_name)
-
     image_path = uploadImgToS3(paths[0])
-
-    delete_image(paths[1])
+    delete_file(paths[1])
 
     return image_path
 
 
 def generate_png_from_dicom(dicom_object, dicom_name, index):
     image = dicom_object.pixel_array.astype(float)
-
     paths = image_helper(image, index, dicom_name)
-
     image_path = uploadImgToS3(paths[0])
-
-    delete_image(paths[1])
+    delete_file(paths[1])
 
     return image_path
-
-
-def delete_image(image):
-    os.remove(image)
 
 
 def image_helper(image, index, dicom_name):

@@ -45,6 +45,7 @@ class Processor:
         image_df.to_csv("data/csv_files/image.csv", index=False)
         ##### Finish CSV creations #####
 
+        print("Writing on Redshift")
         write(main_df, "main_table")
         write(patient_df, "patient_table")
         write(study_df, "study_table")
