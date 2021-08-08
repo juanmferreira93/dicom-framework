@@ -2,7 +2,6 @@
 
 FROM python:3.8-slim-buster
 
-# WORKDIR /dicomframework
 ENV TERM=xterm
 
 RUN pip install pipenv 
@@ -15,8 +14,6 @@ RUN apt-get update \
 COPY Pipfile .
 COPY Pipfile.lock .
 
-RUN pipenv install --deploy
-
-CMD [ "pipenv", "run", "python", "dicomframework"]
+RUN pipenv install --system --ignore-pipfile
 
 COPY . .
