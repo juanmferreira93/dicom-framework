@@ -1,11 +1,12 @@
 import gc
+import logging
 
 import pandas as pd
-from awsservice.redshift import write
-from dicom_generator.column_mapping import *
-from logger.logger import Logger
 
-logger = Logger()
+from dicomframework.awsservice.redshift import write
+from dicomframework.dicom_generator.column_mapping import *
+
+logger = logging.getLogger("DICOM-Processor")
 
 
 class Processor:
@@ -48,7 +49,7 @@ class Processor:
         image_df.to_csv("data/csv_files/image.csv", index=False)
         ##### Finish CSV creations #####
 
-        logger.log("info", "Writing on Redshift")
+        logger.info("Writing on Redshift")
         write(main_df, "main_table")
         write(patient_df, "patient_table")
         write(study_df, "study_table")

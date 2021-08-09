@@ -1,16 +1,17 @@
+import logging
 import os
 
 import numpy as np
-from awsservice.s3 import connect, uploadImgToS3
 from decouple import config
-from dicom_generator.column_mapping import child_mapping_table
-from dicom_generator.processor import Processor
-from logger.logger import Logger
 from PIL import Image
 from pydicom import dcmread
 from tqdm import tqdm
 
-logger = Logger()
+from dicomframework.awsservice.s3 import connect, uploadImgToS3
+from dicomframework.dicom_generator.column_mapping import child_mapping_table
+from dicomframework.dicom_generator.processor import Processor
+
+logger = logging.getLogger("DICOM-Processor")
 
 
 def to_csv():
@@ -24,13 +25,13 @@ def to_csv():
 
     for obj in bucket.objects.filter(Prefix="dicom_files/"):
         file_name = obj.key.split("/")[-1]
-        logger.log("info", f"Downloading file: {file_name}")
+        logger.info(f"Downloading file: {file_name}")
 
         if not file_name == "":
             bucket.download_file(obj.key, f"data/dicom_files/{file_name}")
 
             dicom_object = dcmread(f"data/dicom_files/{file_name}")
-            logger.log("info", f"Processing dicom: {file_name}")
+            logger.info(f"Processing dicom: {file_name}")
 
             modality = dicom_object.Modality
             if modality in processor.supported_modalities:
@@ -98,7 +99,7 @@ def generate_image(dicom_object, dicom_name):
 
         return image_paths
     except:
-        logger.log("error", f"Could not convert:  {dicom_object}")
+        logger.error(f"Could not convert:  {dicom_object}")
 
 
 def generate_png_from_pixel(pixel_array, dicom_name, index):
