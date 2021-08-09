@@ -25,13 +25,13 @@ def to_csv():
 
     for obj in bucket.objects.filter(Prefix="dicom_files/"):
         file_name = obj.key.split("/")[-1]
-        logger.info(f"Downloading file: {file_name}")
+        logger.error(f"Downloading file: {file_name}")
 
         if not file_name == "":
             bucket.download_file(obj.key, f"data/dicom_files/{file_name}")
 
             dicom_object = dcmread(f"data/dicom_files/{file_name}")
-            logger.info(f"Processing dicom: {file_name}")
+            logger.error(f"Processing dicom: {file_name}")
 
             modality = dicom_object.Modality
             if modality in processor.supported_modalities:
