@@ -6,8 +6,7 @@ import pandas as pd
 from dicomframework.awsservice.redshift import write
 from dicomframework.dicom_generator.column_mapping import *
 
-logger = logging.getLogger("DICOM-Processor")
-
+logger = logging.getLogger(__name__)
 
 class Processor:
     def __init__(self):
@@ -49,7 +48,7 @@ class Processor:
         image_df.to_csv("data/csv_files/image.csv", index=False)
         ##### Finish CSV creations #####
 
-        logger.error("Writing on Redshift")
+        logger.info("Writing on Redshift")
         write(main_df, "main_table")
         write(patient_df, "patient_table")
         write(study_df, "study_table")

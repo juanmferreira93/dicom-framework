@@ -1,21 +1,21 @@
+import logging
+
 from dicomframework.awsservice.transformations import connect_query
 from dicomframework.transformations.transformation import Transformation
 
+logger = logging.getLogger(__name__)
 
 class T1(Transformation):
     def run(self):
-        print("Executing T1")
+        logger.info("Executing T1")
 
-        self.execute("select * from main_table")
+        self.execute("")  # todo: need to improve this
 
-        print("Finish execution of T1")
-
-        input("Press ENTER to continue \n")
+        logger.info("Finish execution of T1")
 
     def execute(self, sql_statement):
         conn = connect_query()
         cur = conn.cursor()
-        cur.execute(sql_statement)
 
         # todo: improve this and make more logic
         start_query = f"create or replace view public.{type(self).__name__}_view"
@@ -30,9 +30,10 @@ class T1(Transformation):
             f"{end_query}"
         )
 
-        print(f"Executing query: {sql_query}")
+        logger.info(f"Executing query: {sql_query}")
         cur.execute(sql_query)
-        print("Commiting")
+
+        logger.info("Commiting")
         conn.commit()
 
         cur.close()
