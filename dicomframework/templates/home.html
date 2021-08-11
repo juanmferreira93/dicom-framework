@@ -2,7 +2,7 @@
 
 {% with messages = get_flashed_messages() %}
     {% if messages %}
-        <ul class=flashes>
+        <ul class="flashes">
             {% for message in messages %}
                 <span>{{message}}</span>
             {% endfor %}
@@ -12,4 +12,8 @@
 
 <form action='/process_dicom' method='post'>
     <button type='submit'>Process Dicom</button>
+</form>
+
+<form action='/t1' method='post'>
+    <button type='submit'>Transformation: t1</button>
 </form>

@@ -11,7 +11,8 @@ from dicomframework.awsservice.s3 import connect, uploadImgToS3
 from dicomframework.dicom_generator.column_mapping import child_mapping_table
 from dicomframework.dicom_generator.processor import Processor
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("dicomframework.generator")
+
 
 def to_csv():
     processor = Processor()

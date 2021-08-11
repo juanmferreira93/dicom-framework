@@ -6,7 +6,8 @@ import pandas as pd
 from dicomframework.awsservice.redshift import write
 from dicomframework.dicom_generator.column_mapping import *
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("dicomframework.processor")
+
 
 class Processor:
     def __init__(self):
