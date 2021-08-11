@@ -1,5 +1,5 @@
-from awsservice.transformations import connect_query
-from transformations.transformation import Transformation
+from dicomframework.awsservice.transformations import connect_query
+from dicomframework.transformations.transformation import Transformation
 
 
 class T1(Transformation):
