@@ -48,7 +48,7 @@ def uploadImgToS3(image):
     bucket_name = config("BUCKET_NAME")
     bucket = s3.Bucket(bucket_name)
     region_name = config("AWS_DEFAULT_REGION")
-    image_folder = "image_files/"
+    image_folder = "image_files"
 
     bucket.upload_file(
         Filename=f"data/{image_folder}/{image}", Key=f"{image_folder}/{image}"

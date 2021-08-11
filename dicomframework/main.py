@@ -21,7 +21,7 @@ stream_handler.setFormatter(
 )
 app.logger.addHandler(stream_handler)
 
-file_handler = RotatingFileHandler("production.log", maxBytes=2000, backupCount=10)
+file_handler = RotatingFileHandler("production.log", maxBytes=2000)
 app.logger.addHandler(file_handler)
 
 app.logger.setLevel(logging.INFO)
