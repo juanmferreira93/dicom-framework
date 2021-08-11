@@ -5,7 +5,6 @@ import numpy as np
 from decouple import config
 from PIL import Image
 from pydicom import dcmread
-from tqdm import tqdm
 
 from dicomframework.awsservice.s3 import connect, uploadImgToS3
 from dicomframework.dicom_generator.column_mapping import child_mapping_table
@@ -89,9 +88,10 @@ def generate_image(dicom_object, dicom_name):
 
         image_paths = []
         if int(secuence) > 2:
-            for pixel_array in tqdm(dicom_object.pixel_array):
+            images_count = len(dicom_object.pixel_array)
+            for pixel_array in dicom_object.pixel_array:
                 i += 1
-                logger.info(f"Processing image {i} from {dicom_name}")
+                logger.info(f"Processing image {i}/{images_count} from {dicom_name}")
                 image_path = generate_png_from_pixel(pixel_array, dicom_name, i)
                 image_paths.append(image_path)
         else:
