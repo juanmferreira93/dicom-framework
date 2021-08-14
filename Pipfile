@@ -12,10 +12,10 @@ sqlalchemy = "*"
 numpy = "*"
 pillow = "*"
 psycopg2 = "*"
-console-menu = "*"
-tqdm = "*"
 flask = "*"
 gunicorn = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [dev-packages]
 black = "*"
