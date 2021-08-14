@@ -138,3 +138,6 @@ data/image_files/*
 
 # Pipefile.lock
 Pipfile.lock
+
+# Coverage
+cov_html/
