@@ -1,0 +1,1 @@
+We will use this folder to store csvs and dicoms files
