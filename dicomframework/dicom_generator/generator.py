@@ -25,7 +25,6 @@ def to_csv():
 
     for obj in bucket.objects.filter(Prefix="dicom_files/"):
         file_name = obj.key.split("/")[-1]
-        logger.info(f"Downloading file: {file_name}")
 
         if not file_name == "":
             bucket.download_file(obj.key, f"data/dicom_files/{file_name}")
@@ -59,6 +58,7 @@ def create_csv(dicom_index, processor, dicom_object, dicom_name):
                 table = child_mapping(col["number"])
 
                 if data in eval(f"processor.{table}_dict")[col["name"]]:
+                    # todo: this line add a extra value when repeated patient appear
                     id = eval(f"processor.{table}_dict")[col["name"]].index(data) + 1
                     processor.main_dict[col["name"]].append(str(id))
                 else:
@@ -72,7 +72,6 @@ def create_csv(dicom_index, processor, dicom_object, dicom_name):
         except:
             if col["name"] != "image_paths":
                 processor.main_dict[col["name"]].append("-")
-                filename = dicom_object.filename.split("/")[2]
 
     image_paths = generate_image(dicom_object, dicom_name)
     create_csv_from_image_paths(processor, dicom_index, image_paths)
@@ -123,14 +122,15 @@ def generate_png_from_dicom(dicom_object, dicom_name, index):
 
 
 def image_helper(image, index, dicom_name):
-    rescaled_image = (np.maximum(image, 0) / image.max()) * 255  # float pixels
-    final_image = np.uint8(rescaled_image)  # integers pixels
+    rescaled_image = (np.maximum(image, 0) / image.max()) * 255
+    final_image = np.uint8(rescaled_image)
     final_image = Image.fromarray(final_image)
 
     index_string = str(index)
-    image_path = f"{dicom_name}{index_string}.png"
+    dicom_name = dicom_name.split(".")[0]
+    image_path = f"{dicom_name}-{index_string}.png"
     image_full_path = f"data/image_files/{image_path}"
-    final_image.save(image_full_path)  # Save the image as PNG
+    final_image.save(image_full_path)
 
     return [image_path, image_full_path]
 

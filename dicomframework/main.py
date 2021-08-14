@@ -1,8 +1,6 @@
 import logging
 import os
-import sys
 from concurrent.futures import ThreadPoolExecutor
-from io import RawIOBase
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask, flash, redirect, render_template, url_for
@@ -14,12 +12,6 @@ executor = ThreadPoolExecutor(1)
 
 app = Flask("dicomframework")
 app.secret_key = "app-secret-key"
-
-stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setFormatter(
-    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-)
-app.logger.addHandler(stream_handler)
 
 file_handler = RotatingFileHandler("production.log", maxBytes=2000)
 app.logger.addHandler(file_handler)
