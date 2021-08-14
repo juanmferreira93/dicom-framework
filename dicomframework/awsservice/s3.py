@@ -19,30 +19,6 @@ def connect():
     return s3
 
 
-def upload():
-    s3 = connect()
-    bucket_name = config("BUCKET_NAME")
-    bucket = s3.Bucket(bucket_name)
-
-    for file in os.listdir("data/csv_files"):
-        if file.split(".")[1] == "csv":
-            bucket.upload_file(
-                Filename=f"data/csv_files/{file}", Key=f"csv_files/{file}"
-            )
-
-
-def uploadImg():
-    s3 = connect()
-    bucket_name = config("BUCKET_NAME")
-    bucket = s3.Bucket(bucket_name)
-
-    for file in os.listdir("data/image_files"):
-        if file.split(".")[2] == "png":
-            bucket.upload_file(
-                Filename=f"data/image_files/{file}", Key=f"image_files/{file}"
-            )
-
-
 def uploadImgToS3(image):
     s3 = connect()
     bucket_name = config("BUCKET_NAME")
