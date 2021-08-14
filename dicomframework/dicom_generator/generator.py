@@ -8,6 +8,7 @@ from pydicom import dcmread
 
 from dicomframework.awsservice.s3 import connect, uploadImgToS3
 from dicomframework.dicom_generator.column_mapping import child_mapping_table
+from dicomframework.dicom_generator.encode_mapping import decode
 from dicomframework.dicom_generator.processor import Processor
 
 logger = logging.getLogger("dicomframework.generator")
@@ -153,16 +154,6 @@ def create_csv_from_image_paths(processor, dicom_index, image_paths):
     for image_path in image_paths:
         processor.image_dict["id"].append(dicom_index)
         processor.image_dict["image_path"].append(image_path)
-
-
-def decode(string):
-    encoding = "utf-8"
-    errors = "replace"
-
-    try:
-        return string.decode(encoding, errors).replace("\x00", "")
-    except:
-        return str(string)
 
 
 def child_mapping(number):
