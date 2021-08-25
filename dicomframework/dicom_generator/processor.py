@@ -54,7 +54,7 @@ class Processor:
         logger.info("Writing main table on Redshift")
         write(main_df, "main_table")
         #### Writing Child table on Redshift ####
-        logger.info("Writing child table on Redshift")
+        logger.info("Writing child tables on Redshift")
         write(patient_df, "patient_table")
         write(study_df, "study_table")
         write(image_df, "image_table")
