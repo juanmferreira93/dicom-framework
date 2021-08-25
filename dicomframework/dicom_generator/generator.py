@@ -14,7 +14,7 @@ from dicomframework.dicom_generator.processor import Processor
 logger = logging.getLogger("dicomframework.generator")
 
 
-def to_csv():
+def to_dict():
     processor = Processor()
 
     s3 = connect()
@@ -25,17 +25,27 @@ def to_csv():
 
     for obj in bucket.objects.filter(Prefix="dicom_files/"):
         file_name = obj.key.split("/")[-1]
+        extension = file_name.split(".")[-1]
 
-        if not file_name == "":
-            bucket.download_file(obj.key, f"data/dicom_files/{file_name}")
+        if extension.upper() != "DCM":
+            logger.info(f"The following file: {file_name} is not a valid DICOM")
+            continue
 
+        if file_name == "":
+            continue
+
+        bucket.download_file(obj.key, f"data/dicom_files/{file_name}")
+        try:
             dicom_object = dcmread(f"data/dicom_files/{file_name}")
+        except:
+            logger.info(f"Invalid file: {file_name}")
+        else:
             logger.info(f"Processing dicom: {file_name}")
 
             modality = dicom_object.Modality
             if modality in processor.supported_modalities:
                 i += 1
-                create_csv(i, processor, dicom_object, file_name)
+                create_dict(i, processor, dicom_object, file_name)
 
             delete_file(f"data/dicom_files/{file_name}")
 
@@ -49,7 +59,7 @@ def delete_file(file):
     os.remove(file)
 
 
-def create_csv(dicom_index, processor, dicom_object, dicom_name):
+def create_dict(dicom_index, processor, dicom_object, dicom_name):
     for col in processor.main_cols:
         try:
             data = decode(dicom_object.get_item(f"0x{col['number']}").value)
@@ -65,7 +75,7 @@ def create_csv(dicom_index, processor, dicom_object, dicom_name):
                     id = len(processor.main_dict[col["name"]]) + 1
                     processor.main_dict[col["name"]].append(str(id))
 
-                    create_csv_from_child_table(processor, table, id, dicom_object)
+                    create_dict_from_child_table(processor, table, id, dicom_object)
             else:
                 processor.main_dict[col["name"]].append(data)
 
@@ -74,7 +84,7 @@ def create_csv(dicom_index, processor, dicom_object, dicom_name):
                 processor.main_dict[col["name"]].append("-")
 
     image_paths = generate_image(dicom_object, dicom_name)
-    create_csv_from_image_paths(processor, dicom_index, image_paths)
+    create_dict_from_image_paths(processor, dicom_index, image_paths)
 
 
 def generate_image(dicom_object, dicom_name):
@@ -135,7 +145,7 @@ def image_helper(image, index, dicom_name):
     return [image_path, image_full_path]
 
 
-def create_csv_from_child_table(processor, table, id, dicom_object):
+def create_dict_from_child_table(processor, table, id, dicom_object):
     for col in eval(f"processor.{table}_cols"):
         try:
             if col["name"] == "id":
@@ -149,7 +159,7 @@ def create_csv_from_child_table(processor, table, id, dicom_object):
             filename = dicom_object.filename.split("/")[2]
 
 
-def create_csv_from_image_paths(processor, dicom_index, image_paths):
+def create_dict_from_image_paths(processor, dicom_index, image_paths):
     processor.main_dict["image_paths"].append(dicom_index)
     for image_path in image_paths:
         processor.image_dict["id"].append(dicom_index)

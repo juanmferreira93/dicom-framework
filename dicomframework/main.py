@@ -5,7 +5,7 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask, flash, redirect, render_template, url_for
 
-from dicomframework.dicom_generator.generator import to_csv
+from dicomframework.dicom_generator.generator import to_dict
 from dicomframework.transformations.image_transformation import ImageTransformation
 from dicomframework.transformations.image_transformation_example import (
     ImageTransformationExample,
@@ -50,7 +50,7 @@ def index():
 
 @app.route("/process_dicom", methods=["POST"])
 def process_dicom():
-    executor.submit(to_csv)
+    executor.submit(to_dict)
     logger.info("Processor start runing on background")
 
     flash("DICOM Process started in background")
