@@ -4,19 +4,16 @@ from abc import ABC, abstractmethod
 from dicomframework.awsservice.transformations import connect_query
 
 
-class Transformation(ABC):
-    logger = logging.getLogger("dicomframework.Transformations")
+class SqlTransformation(ABC):
+    logger = logging.getLogger("dicomframework.SqlTransformations")
 
     def run(self):
         """
         Template method
         """
 
-        "Required"
         view_name = self.view_name()
         sql_query = self.sql_query()
-
-        "Non required"
         final_query = self.generate_sql_statement(sql_query, view_name)
         self.execute_query(final_query)
 

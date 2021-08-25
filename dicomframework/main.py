@@ -6,10 +6,14 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask, flash, redirect, render_template, url_for
 
 from dicomframework.dicom_generator.generator import to_csv
+from dicomframework.transformations.image_transformation import ImageTransformation
+from dicomframework.transformations.image_transformation_example import (
+    ImageTransformationExample,
+)
+from dicomframework.transformations.sql_transformation import SqlTransformation
 from dicomframework.transformations.sql_transformation_example import (
     SqlTransformationExample,
 )
-from dicomframework.transformations.transformation import Transformation
 
 executor = ThreadPoolExecutor(1)
 
@@ -58,12 +62,27 @@ def process_dicom():
 def sql_transformation_example():
     logger.info("SqlTransformationExample start runing on background")
 
-    executor.submit(client_call(SqlTransformationExample()))
+    executor.submit(call_sql_transformation(SqlTransformationExample()))
 
-    flash("Transformation: SqlTransformationExample started in background")
+    flash("SqlTransformation: SqlTransformationExample started in background")
 
     return redirect(url_for("index"))
 
 
-def client_call(transformation: Transformation):
-    transformation.run()
+# @app.route("/image_transformation_example", methods=["POST"])
+# def image_transformation_example():
+#     logger.info("ImageTransformationExample start runing on background")
+
+#     executor.submit(call_image_transformation(ImageTransformationExample()))
+
+#     flash("ImageTransformation: ImageTransformationExample started in background")
+
+#     return redirect(url_for("index"))
+
+
+def call_sql_transformation(sql_transformation: SqlTransformation):
+    sql_transformation.run()
+
+
+def call_image_transformation(image_transformation: ImageTransformation):
+    image_transformation.run()
