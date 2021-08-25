@@ -6,7 +6,10 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask, flash, redirect, render_template, url_for
 
 from dicomframework.dicom_generator.generator import to_csv
-from dicomframework.transformations.t1 import T1
+from dicomframework.transformations.sql_transformation_example import (
+    SqlTransformationExample,
+)
+from dicomframework.transformations.transformation import Transformation
 
 executor = ThreadPoolExecutor(1)
 
@@ -51,11 +54,16 @@ def process_dicom():
     return redirect(url_for("index"))
 
 
-@app.route("/t1", methods=["POST"])
-def t1():
-    executor.submit(T1.run)
-    logger.info("T1 start runing on background")
+@app.route("/sql_transformation_example", methods=["POST"])
+def sql_transformation_example():
+    logger.info("SqlTransformationExample start runing on background")
 
-    flash("Transformation: t1 started in background")
+    executor.submit(client_call(SqlTransformationExample()))
+
+    flash("Transformation: SqlTransformationExample started in background")
 
     return redirect(url_for("index"))
+
+
+def client_call(transformation: Transformation):
+    transformation.run()
