@@ -39,7 +39,7 @@ def to_csv():
 
             delete_file(f"data/dicom_files/{file_name}")
 
-    processor.create_csv()
+    processor.crate_records()
     processor.clean()
 
     logger.info("Process finished")
