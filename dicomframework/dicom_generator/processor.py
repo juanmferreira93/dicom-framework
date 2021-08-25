@@ -34,26 +34,31 @@ class Processor:
         # self.xxx._dict = {col['name']: [] for col in self.xxx_cols}
         ##### Finish dict initialization #####
 
-    # Replace this method with awsservice.redshift.write method
-    def create_csv(self):
+    # awsservice.redshift.write Method
+    def crate_records(self):
         main_df = pd.DataFrame(self.main_dict)
         main_df.to_csv("data/csv_files/main.csv", index=False)
 
-        ##### Child CSVs #####
+        ##### Child dataframe ####
         patient_df = pd.DataFrame(self.patient_dict)
-        patient_df.to_csv("data/csv_files/patient.csv", index=False)
-
         study_df = pd.DataFrame(self.study_dict)
-        study_df.to_csv("data/csv_files/study.csv", index=False)
         image_df = pd.DataFrame(self.image_dict)
+        ##### Finish dataframe creation ####
+
+        ##### Child CSVs #####
+        patient_df.to_csv("data/csv_files/patient.csv", index=False)
+        study_df.to_csv("data/csv_files/study.csv", index=False)
         image_df.to_csv("data/csv_files/image.csv", index=False)
         ##### Finish CSV creations #####
 
-        logger.info("Writing on Redshift")
+        logger.info("Writing main table on Redshift")
         write(main_df, "main_table")
+        #### Writing Child table on Redshift ####
+        logger.info("Writing child table on Redshift")
         write(patient_df, "patient_table")
         write(study_df, "study_table")
         write(image_df, "image_table")
+        #### Finish writing on Redshit ####
 
     def clean(self):
         # This code deletes dicts
