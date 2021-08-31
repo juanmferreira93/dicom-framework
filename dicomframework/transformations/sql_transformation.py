@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-from dicomframework.awsservice.transformations import connect_query
+from dicomframework.awsservice.transformation import connect_query
 
 
 class SqlTransformation(ABC):

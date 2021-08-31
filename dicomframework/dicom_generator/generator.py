@@ -2,7 +2,6 @@ import logging
 import os
 
 import numpy as np
-from decouple import config
 from PIL import Image
 from pydicom import dcmread
 
@@ -18,7 +17,7 @@ def to_dict():
     processor = Processor()
 
     s3 = connect()
-    bucket_name = config("BUCKET_NAME")
+    bucket_name = os.environ.get("AWS_BUCKET_NAME")
     bucket = s3.Bucket(bucket_name)
 
     i = 0

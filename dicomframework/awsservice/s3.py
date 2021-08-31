@@ -1,13 +1,12 @@
 import os
 
 import boto3
-from decouple import config
 
 
 def connect():
-    region_name = config("AWS_DEFAULT_REGION")
-    access_key = config("AWS_ACCESS_KEY_ID")
-    master_key = config("AWS_SECRET_ACCESS_KEY")
+    region_name = os.environ.get("AWS_DEFAULT_REGION")
+    access_key = os.environ.get("AWS_ACCESS_KEY_ID")
+    master_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
     s3 = boto3.resource(
         service_name="s3",
@@ -21,9 +20,9 @@ def connect():
 
 def uploadImgToS3(image):
     s3 = connect()
-    bucket_name = config("BUCKET_NAME")
+    bucket_name = os.environ.get("AWS_BUCKET_NAME")
     bucket = s3.Bucket(bucket_name)
-    region_name = config("AWS_DEFAULT_REGION")
+    region_name = os.environ.get("AWS_DEFAULT_REGION")
     image_folder = "image_files"
 
     bucket.upload_file(
@@ -36,7 +35,7 @@ def uploadImgToS3(image):
 
 def download():
     s3 = connect()
-    bucket_name = config("BUCKET_NAME")
+    bucket_name = os.environ.get("AWS_BUCKET_NAME")
     bucket = s3.Bucket(bucket_name)
 
     for obj in bucket.objects.filter(Prefix="dicom_files/"):
