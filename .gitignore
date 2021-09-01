@@ -141,3 +141,6 @@ Pipfile.lock
 
 # Coverage
 cov_html/
+
+# Credentials
+.flaskenv
