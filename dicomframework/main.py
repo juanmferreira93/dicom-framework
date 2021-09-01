@@ -50,15 +50,20 @@ def check_startup_configuration():
         try:
             # Redshift
             logger.info("Testing Reshift connection")
-            connect_redshift()
+            conn = connect_redshift()
+            conn.execute("select * from main_table limit 1")
 
             # S3
             logger.info("Testing S3 connection")
             connect_s3()
+            conn = connect_s3()
+            conn.Bucket(os.environ.get("AWS_BUCKET_NAME"))
 
             # Transformations
             logger.info("Testing Transformation connection")
-            connect_query()
+            conn = connect_query()
+            cur = conn.cursor()
+            cur.execute("select * from main_table limit 1")
 
             logger.info("All connections are good")
         except:
