@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 
 from dicomframework.awsservice.redshift import write
-from dicomframework.awsservice.transformations import connect_query
+from dicomframework.awsservice.transformation import connect_query
 
 
 class ImageTransformation(ABC):

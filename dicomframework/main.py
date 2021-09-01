@@ -3,8 +3,11 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask, flash, redirect, render_template, url_for
+from flask import Flask, flash, redirect, render_template, request, url_for
 
+from dicomframework.awsservice.redshift import connect as connect_redshift
+from dicomframework.awsservice.s3 import connect as connect_s3
+from dicomframework.awsservice.transformation import connect_query
 from dicomframework.dicom_generator.generator import to_dict
 from dicomframework.transformations.image_transformation import ImageTransformation
 from dicomframework.transformations.image_transformation_example import (
@@ -41,6 +44,30 @@ def auto_create_folders():
         logger.info("Folder data/image_files was created")
 
 
+@app.before_request
+def check_startup_configuration():
+    if not request.path == "/":
+        try:
+            # Redshift
+            logger.info("Testing Reshift connection")
+            connect_redshift()
+
+            # S3
+            logger.info("Testing S3 connection")
+            connect_s3()
+
+            # Transformations
+            logger.info("Testing Transformation connection")
+            connect_query()
+
+            logger.info("All connections are good")
+        except:
+            logger.error("Please check your credentials before continue.")
+            flash("Something went wrong, please check your credentials.")
+
+            return redirect(url_for("index"))
+
+
 @app.route("/")
 def index():
     auto_create_folders()
@@ -61,23 +88,19 @@ def process_dicom():
 @app.route("/sql_transformation_example", methods=["POST"])
 def sql_transformation_example():
     logger.info("SqlTransformationExample start runing on background")
-
     executor.submit(call_sql_transformation(SqlTransformationExample()))
-
     flash("SqlTransformation: SqlTransformationExample started in background")
 
     return redirect(url_for("index"))
 
 
-# @app.route("/image_transformation_example", methods=["POST"])
-# def image_transformation_example():
-#     logger.info("ImageTransformationExample start runing on background")
+@app.route("/image_transformation_example", methods=["POST"])
+def image_transformation_example():
+    logger.info("ImageTransformationExample start runing on background")
+    executor.submit(call_image_transformation(ImageTransformationExample()))
+    flash("ImageTransformation: ImageTransformationExample started in background")
 
-#     executor.submit(call_image_transformation(ImageTransformationExample()))
-
-#     flash("ImageTransformation: ImageTransformationExample started in background")
-
-#     return redirect(url_for("index"))
+    return redirect(url_for("index"))
 
 
 def call_sql_transformation(sql_transformation: SqlTransformation):
