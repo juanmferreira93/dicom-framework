@@ -55,9 +55,10 @@ def check_startup_configuration():
 
             # S3
             logger.info("Testing S3 connection")
-            connect_s3()
             conn = connect_s3()
-            conn.Bucket(os.environ.get("AWS_BUCKET_NAME"))
+            bucket = conn.Bucket(os.environ.get("AWS_BUCKET_NAME"))
+            for obj in bucket.objects.filter(Prefix="dicom_files/"):
+                obj.key
 
             # Transformations
             logger.info("Testing Transformation connection")
