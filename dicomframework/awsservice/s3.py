@@ -34,6 +34,21 @@ def uploadImgToS3(image):
     return image_path
 
 
+def uploadImgToS3OnT1(image):
+    s3 = connect()
+    bucket_name = config("BUCKET_NAME")
+    bucket = s3.Bucket(bucket_name)
+    region_name = config("AWS_DEFAULT_REGION")
+    image_folderToPush = "t1"
+    image_folderToGet="image_files"
+    bucket.upload_file(
+        Filename=f"data/{image_folderToGet}/{image}", Key=f"{image_folderToPush}/{image}"
+    )
+
+    image_path = f"{bucket_name}.s3.{region_name}.amazonaws.com/{image_folderToPush}/{image}"
+    return image_path
+
+
 def download():
     s3 = connect()
     bucket_name = config("BUCKET_NAME")
@@ -44,3 +59,11 @@ def download():
 
         if not file_name == "":
             bucket.download_file(obj.key, f"data/dicom_files/{file_name}")
+
+def downloadImg(imgName):
+    s3 = connect()
+    bucket_name = config("BUCKET_NAME")
+    bucket = s3.Bucket(bucket_name)
+    print(imgName)
+    imName=imgName.split("/")[1] 
+    bucket.download_file(imgName, f"data/image_files/{imName}")

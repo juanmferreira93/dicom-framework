@@ -69,15 +69,15 @@ def sql_transformation_example():
     return redirect(url_for("index"))
 
 
-# @app.route("/image_transformation_example", methods=["POST"])
-# def image_transformation_example():
-#     logger.info("ImageTransformationExample start runing on background")
+@app.route("/image_transformation_example", methods=["POST"])
+def image_transformation_example():
+    logger.info("ImageTransformationExample start runing on background")
 
-#     executor.submit(call_image_transformation(ImageTransformationExample()))
+    executor.submit(call_image_transformation(ImageTransformationExample()))
 
-#     flash("ImageTransformation: ImageTransformationExample started in background")
+    flash("ImageTransformation: ImageTransformationExample started in background")
 
-#     return redirect(url_for("index"))
+    return redirect(url_for("index"))
 
 
 def call_sql_transformation(sql_transformation: SqlTransformation):

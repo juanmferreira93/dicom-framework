@@ -1,11 +1,12 @@
 import logging
-from abc import ABC, abstractmethod
-
+import numpy as np
 import pandas as pd
-
+from PIL import Image, ImageEnhance
+from abc import ABC, abstractmethod
 from dicomframework.awsservice.redshift import write
 from dicomframework.awsservice.transformations import connect_query
-
+from dicomframework.awsservice.s3 import downloadImg, uploadImgToS3OnT1
+from dicomframework.dicom_generator.generator import delete_file
 
 class ImageTransformation(ABC):
     logger = logging.getLogger("dicomframework.ImageTransformations")
@@ -14,11 +15,22 @@ class ImageTransformation(ABC):
         """
         Template method
         """
-
+        print ("111")
         images = self.get_images()
-        new_images = self.transform(images)
-        images_dict = self.generate_table(new_images)
-        self.write_table(images_dict)
+
+        
+
+    def convert_image(image_path):
+        image_full_path = f"data/image_files/{image_path}"
+        image = Image.open(image_full_path)
+        factor=2
+        image = ImageEnhance.Contrast(image).enhance(factor)
+        final_image = np.uint8(image)
+        final_image = Image.fromarray(final_image)
+        image_path_Save = 'transform'+image_path
+        image_full_path = f"data/image_files/{image_path_Save}"
+        final_image.save(image_full_path)
+       
 
     def get_images(self):
         conn = connect_query()
@@ -29,17 +41,35 @@ class ImageTransformation(ABC):
         # todo: ver bien como manejar esto, en teoria son
         # los resultados de la consulta que trae todas la imagenes.
         images = cur.fetchall()
-
         # por ejemplo, para recorrerlo:
-
-        # for row in images:
-        #   print "%s, %s" % (row["id"], row["image_path"])
-
         # esto hay qye ver si lo podemos cerrar y seguir usando lo que
         # quedo guardado en images afuera del metodo. Seria lo ideal.
 
-        # cur.close()
-        # conn.close()
+        for row in images: 
+            name = row[1]
+            name2= name.split("/")
+            name3=name2[1]+"/"+name2[2]
+            print("entra a descargar : "+name3)
+            downloadImg(name3)
+            print("descarg0 : "+name3)
+            #convert_image(name3), como no pude llamar al convert lo tire pa aca
+            image_full_path = f"data/{name3}"
+            image = Image.open(image_full_path)
+            factor=2
+            image = ImageEnhance.Contrast(image).enhance(factor)
+            final_image = np.uint8(image)
+            final_image = Image.fromarray(final_image)
+            image_path_Save = 'transform'+name2[2]
+            image_full_path = f"data/image_files/{image_path_Save}"
+            
+            final_image.save(image_full_path)
+            uploadImgToS3OnT1(image_path_Save)
+            delete_file(f"data/{name3}")
+            
+           
+
+        cur.close()
+        conn.close()
         return images
 
     @abstractmethod
