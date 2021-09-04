@@ -1,9 +1,13 @@
 import logging
+import os
+import shutil
 from abc import ABC, abstractmethod
 
 import pandas as pd
+from PIL import Image
 
 from dicomframework.awsservice.redshift import write
+from dicomframework.awsservice.s3 import save_image, uploadImgToS3
 from dicomframework.awsservice.transformation import connect_query
 
 
@@ -15,55 +19,68 @@ class ImageTransformation(ABC):
         Template method
         """
 
-        images = self.get_images()
-        new_images = self.transform(images)
-        images_dict = self.generate_table(new_images)
-        self.write_table(images_dict)
+        transformation_name = self.transformation_name()
 
-    def get_images(self):
+        self.download_images(transformation_name)
+
+        for image_name in os.listdir(f"data/{transformation_name}"):
+            image = Image.open(f"data/{transformation_name}/{image_name}")
+            image = self.transform(image)
+            image.save(f"data/{transformation_name}/{image_name}")
+
+            uploadImgToS3(image_name, transformation_name)
+
+        images_dict = self.generate_table(transformation_name)
+
+        try:
+            shutil.rmtree(f"data/{transformation_name}")
+        except:
+            self.logger.warning(f"Could not delete folder: data/{transformation_name}")
+
+        self.write_table(images_dict, transformation_name)
+        self.logger.info(f"Transformation: {transformation_name} execution finished")
+
+    def download_images(self, transformation_name):
         conn = connect_query()
         cur = conn.cursor()
 
         cur.execute("select * from public.image_table")
-
-        # todo: ver bien como manejar esto, en teoria son
-        # los resultados de la consulta que trae todas la imagenes.
         images = cur.fetchall()
 
-        # por ejemplo, para recorrerlo:
+        for row in images:
+            dicom_id = row[0]
+            image_name = dicom_id + "+" + row[1].split("/")[-1]
+            self.logger.info(f"Getting image: {image_name}")
+            save_image(transformation_name, image_name)
 
-        # for row in images:
-        #   print "%s, %s" % (row["id"], row["image_path"])
+        cur.close()
+        conn.close()
 
-        # esto hay qye ver si lo podemos cerrar y seguir usando lo que
-        # quedo guardado en images afuera del metodo. Seria lo ideal.
-
-        # cur.close()
-        # conn.close()
         return images
 
+    def generate_table(self, transformation_name):
+        image_dict = {col: [] for col in ["id", "image_path"]}
+
+        for image_name in os.listdir(f"data/{transformation_name}"):
+            dicom_id = image_name.split("+")[0]
+            image_dict["id"].append(dicom_id)
+
+            bucket_name = os.environ.get("AWS_BUCKET_NAME")
+            region_name = os.environ.get("AWS_DEFAULT_REGION")
+
+            image_path = f"{bucket_name}.s3.{region_name}.amazonaws.com/{transformation_name}/{image_name}"
+            image_dict["image_path"].append(image_path)
+
+        return image_dict
+
+    def write_table(self, images_dict, transformation_name):
+        self.logger.info(f"Writing new table: {transformation_name} on Redshift")
+        images_df = pd.DataFrame(images_dict)
+        write(images_df, transformation_name)
+
     @abstractmethod
-    def transform(self, images):
+    def transform(self, transformation_name):
         # El codigo de la transformacion, lo define el usuario en la clase hija
-        pass
-
-    def generate_table(self, images):
-        # Aca la logica de la generacion del a tabla y el data frame
-        # itera sobre images
-        # for row in images:
-        #   print "%s, %s" % (row["id"], row["image_path"])
-        # y va armando todo
-        pass
-
-    def write_table(self, images_dict):
-        # Aca se deberia usar un metod (o el mismo importandolo) que se
-        # usa para escribir en todos lados
-
-        images_df = pd.DataFrame(self.images_dict)
-        # el csv lo creamos para una eventual auditoria de la informacion
-        images_df.to_csv(f"data/csv_files/{self.transformation_name}.csv", index=False)
-        # no se si se lo tengo q pasar con o sin parentesis: self.transformation_name()
-        write(images_df, self.transformation_name)
         pass
 
     @abstractmethod
