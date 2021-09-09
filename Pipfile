@@ -5,17 +5,17 @@ name = "pypi"
 
 [packages]
 boto3 = "*"
-python-decouple = "*"
 pydicom = "*"
 pandas = "*"
 sqlalchemy = "*"
 numpy = "*"
 pillow = "*"
 psycopg2 = "*"
-console-menu = "*"
-tqdm = "*"
 flask = "*"
 gunicorn = "*"
+pytest = "*"
+pytest-cov = "*"
+python-dotenv = "*"
 
 [dev-packages]
 black = "*"

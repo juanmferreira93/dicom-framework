@@ -132,9 +132,13 @@ dmypy.json
 .vscode/
 
 # Avoid tracking dicom and csv files
-data/csv_files/*
-data/dicom_files/*
-data/image_files/*
+data/
 
 # Pipefile.lock
 Pipfile.lock
+
+# Coverage
+cov_html/
+
+# Credentials
+.flaskenv

@@ -1,17 +1,16 @@
-from decouple import config
+import os
+
 from sqlalchemy import NVARCHAR, create_engine
 
 
 def connect():
-    dsn_database = config("DSN_DATABASE")
-    dsn_hostname = config("DSN_HOSTNAME")
-    dsn_port = config("DSN_PORT")
-    dsn_uid = config("DSN_UID")
-    dsn_pwd = config("DSN_PWD")
+    database = os.environ.get("AWS_DATABASE")
+    hostname = os.environ.get("AWS_HOSTNAME")
+    port = os.environ.get("AWS_PORT")
+    uid = os.environ.get("AWS_UID")
+    pwd = os.environ.get("AWS_PASSWORD")
 
-    conn = create_engine(
-        f"postgresql://{dsn_uid}:{dsn_pwd}@{dsn_hostname}:{dsn_port}/{dsn_database}"
-    )
+    conn = create_engine(f"postgresql://{uid}:{pwd}@{hostname}:{port}/{database}")
 
     return conn
 

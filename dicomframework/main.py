@@ -3,10 +3,18 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask, flash, redirect, render_template, url_for
+from flask import Flask, flash, redirect, render_template, request, url_for
 
-from dicomframework.dicom_generator.generator import to_csv
-from dicomframework.transformations.t1 import T1
+from dicomframework.awsservice.redshift import connect as connect_redshift
+from dicomframework.awsservice.s3 import connect as connect_s3
+from dicomframework.awsservice.transformation import connect_query
+from dicomframework.dicom_generator.generator import to_dict
+from dicomframework.transformations.image_transformation_example import (
+    ImageTransformationExample,
+)
+from dicomframework.transformations.sql_transformation_example import (
+    SqlTransformationExample,
+)
 
 executor = ThreadPoolExecutor(1)
 
@@ -34,6 +42,37 @@ def auto_create_folders():
         logger.info("Folder data/image_files was created")
 
 
+# Keep this commented to improve speed on development process
+# @app.before_request
+def check_startup_configuration():
+    if not request.path == "/":
+        try:
+            # Redshift
+            logger.info("Testing Reshift connection")
+            conn = connect_redshift()
+            conn.execute("select * from main_table limit 1")
+
+            # S3
+            logger.info("Testing S3 connection")
+            conn = connect_s3()
+            bucket = conn.Bucket(os.environ.get("AWS_BUCKET_NAME"))
+            for obj in bucket.objects.filter(Prefix="dicom_files/"):
+                obj.key
+
+            # Transformations
+            logger.info("Testing Transformation connection")
+            conn = connect_query()
+            cur = conn.cursor()
+            cur.execute("select * from main_table limit 1")
+
+            logger.info("All connections are good")
+        except:
+            logger.error("Please check your credentials before continue.")
+            flash("Something went wrong, please check your credentials.")
+
+            return redirect(url_for("index"))
+
+
 @app.route("/")
 def index():
     auto_create_folders()
@@ -43,7 +82,7 @@ def index():
 
 @app.route("/process_dicom", methods=["POST"])
 def process_dicom():
-    executor.submit(to_csv)
+    executor.submit(to_dict)
     logger.info("Processor start runing on background")
 
     flash("DICOM Process started in background")
@@ -51,11 +90,19 @@ def process_dicom():
     return redirect(url_for("index"))
 
 
-@app.route("/t1", methods=["POST"])
-def t1():
-    executor.submit(T1.run)
-    logger.info("T1 start runing on background")
+@app.route("/sql_transformation_example", methods=["POST"])
+def sql_transformation_example():
+    logger.info("SqlTransformationExample start runing on background")
+    executor.submit(SqlTransformationExample().run)
+    flash("SqlTransformation: SqlTransformationExample started in background")
 
-    flash("Transformation: t1 started in background")
+    return redirect(url_for("index"))
+
+
+@app.route("/image_transformation_example", methods=["POST"])
+def image_transformation_example():
+    logger.info("ImageTransformationExample start runing on background")
+    executor.submit(ImageTransformationExample().run)
+    flash("ImageTransformation: ImageTransformationExample started in background")
 
     return redirect(url_for("index"))
