@@ -9,11 +9,9 @@ from dicomframework.awsservice.redshift import connect as connect_redshift
 from dicomframework.awsservice.s3 import connect as connect_s3
 from dicomframework.awsservice.transformation import connect_query
 from dicomframework.dicom_generator.generator import to_dict
-from dicomframework.transformations.image_transformation import ImageTransformation
 from dicomframework.transformations.image_transformation_example import (
     ImageTransformationExample,
 )
-from dicomframework.transformations.sql_transformation import SqlTransformation
 from dicomframework.transformations.sql_transformation_example import (
     SqlTransformationExample,
 )
@@ -44,7 +42,8 @@ def auto_create_folders():
         logger.info("Folder data/image_files was created")
 
 
-@app.before_request
+# Keep this commented to improve speed on development process
+# @app.before_request
 def check_startup_configuration():
     if not request.path == "/":
         try:
@@ -94,7 +93,7 @@ def process_dicom():
 @app.route("/sql_transformation_example", methods=["POST"])
 def sql_transformation_example():
     logger.info("SqlTransformationExample start runing on background")
-    executor.submit(call_sql_transformation(SqlTransformationExample()))
+    executor.submit(SqlTransformationExample().run)
     flash("SqlTransformation: SqlTransformationExample started in background")
 
     return redirect(url_for("index"))
@@ -103,15 +102,7 @@ def sql_transformation_example():
 @app.route("/image_transformation_example", methods=["POST"])
 def image_transformation_example():
     logger.info("ImageTransformationExample start runing on background")
-    executor.submit(call_image_transformation(ImageTransformationExample()))
+    executor.submit(ImageTransformationExample().run)
     flash("ImageTransformation: ImageTransformationExample started in background")
 
     return redirect(url_for("index"))
-
-
-def call_sql_transformation(sql_transformation: SqlTransformation):
-    sql_transformation.run()
-
-
-def call_image_transformation(image_transformation: ImageTransformation):
-    image_transformation.run()

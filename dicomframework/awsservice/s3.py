@@ -18,12 +18,11 @@ def connect():
     return s3
 
 
-def uploadImgToS3(image):
+def uploadImgToS3(image, image_folder="image_files"):
     s3 = connect()
     bucket_name = os.environ.get("AWS_BUCKET_NAME")
     bucket = s3.Bucket(bucket_name)
     region_name = os.environ.get("AWS_DEFAULT_REGION")
-    image_folder = "image_files"
 
     bucket.upload_file(
         Filename=f"data/{image_folder}/{image}", Key=f"{image_folder}/{image}"
@@ -43,3 +42,17 @@ def download():
 
         if not file_name == "":
             bucket.download_file(obj.key, f"data/dicom_files/{file_name}")
+
+
+def save_image(folder_name, image_name):
+    s3 = connect()
+    bucket_name = os.environ.get("AWS_BUCKET_NAME")
+    bucket = s3.Bucket(bucket_name)
+
+    if not os.path.exists(f"data/{folder_name}"):
+        os.makedirs(f"data/{folder_name}")
+
+    image_name_s3 = image_name.split("+")[-1]
+    bucket.download_file(
+        f"image_files/{image_name_s3}", f"data/{folder_name}/{image_name}"
+    )
